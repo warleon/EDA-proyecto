@@ -13,25 +13,19 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+include_directories(src)
+link_directories(src)
+
 enable_testing()
 
 add_executable(
-  dummyTest
-  tests/demoTest.cpp
-)
-add_executable(
-  otherTest
-  tests/otherTest.cpp
+  RTree
+  tests/RTreeTest.cpp
 )
 target_link_libraries(
-  otherTest
-  gtest_main
-)
-target_link_libraries(
-  dummyTest
+  RTree
   gtest_main
 )
 
 include(GoogleTest)
-gtest_discover_tests(dummyTest)
-gtest_discover_tests(otherTest)
+gtest_discover_tests(RTree)
