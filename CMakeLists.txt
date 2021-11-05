@@ -26,6 +26,33 @@ target_link_libraries(
   RTree
   gtest_main
 )
+add_executable(
+  Point
+  tests/PointTest.cpp
+)
+target_link_libraries(
+  Point
+  gtest_main
+)
+add_executable(
+  BBox
+  tests/BBoxTest.cpp
+)
+target_link_libraries(
+  BBox
+  gtest_main
+)
+add_executable(
+  RTreeNode
+  tests/RTreeNodeTest.cpp
+)
+target_link_libraries(
+  RTreeNode
+  gtest_main
+)
 
 include(GoogleTest)
 gtest_discover_tests(RTree)
+gtest_discover_tests(RTreeNode)
+gtest_discover_tests(Point)
+gtest_discover_tests(BBox)

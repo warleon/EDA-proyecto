@@ -34,3 +34,4 @@
 #extra
 build/
 data/
+.vscode
