@@ -5,4 +5,6 @@ struct RTreeNode {
   using bbox_t = BBox_t;
   std::array<RTreeNode*, M> sons;
   bbox_t box;
+
+  bool isLeaf() { return box.content; }
 };

@@ -14,5 +14,6 @@ using rtree_t = RTree<node_t>;
 // Demonstrate some basic assertions.
 TEST(RTreeTest, test1) {
   rtree_t testTree;
-  ASSERT_TRUE(testTree.insert(point_t())) << "The insertion went wrong";
+  double p[2] = {5, 5};
+  ASSERT_TRUE(testTree.insert(point_t(p))) << "The insertion went wrong";
 }
