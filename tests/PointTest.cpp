@@ -1,10 +1,9 @@
 #include <gtest/gtest.h>
 
 #include <Point.hpp>
-#include <string>
-using point_t = Point<std::string, double, 2>;
+using point_t = Point<int, double, 2>;
 
-TEST(PointTest, test1) {
+TEST(PointTest, betweenTest) {
   double points[3][2] = {{5, 5}, {0, 0}, {10, 10}};
   point_t p1(points[0]);
   point_t p2(points[1]);
@@ -16,3 +15,4 @@ TEST(PointTest, test1) {
   EXPECT_TRUE(r1);
   EXPECT_FALSE(r2);
 }
+TEST(PointTest, DefaultTest) { }
