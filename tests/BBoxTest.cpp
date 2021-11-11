@@ -25,4 +25,9 @@ TEST(BBoxTest, ContainTest) {
   EXPECT_TRUE(boxA.contains(boxB));
   EXPECT_FALSE(boxB.contains(boxA));
 }
+TEST(BBoxTest, PointyBoxTest) {
+  point_t a(ps[2]);
+  bbox_t box(a, a);
+  ASSERT_TRUE(box.covers(a));
+}
 TEST(BBoxTest, DefaultTest) {}

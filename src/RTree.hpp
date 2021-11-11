@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <vector>
 
 template <class node_t>
@@ -11,12 +12,14 @@ class RTree {
   node_t* root;
 
  public:
-  RTree() : root(nullptr) {}
+  RTree() { root = new node_t; }
   ~RTree() {}
 
   bool insert(point_t p) {
-    // TODO
-    return false;
+    if (root->null()) {                // only root could be null
+      return root->box.tryInsert(p);  // should return true
+    }
+    return root->insert(p);
   }
   pointSet_t getRegion(point_t a, point_t b) {
     pointSet_t result;
