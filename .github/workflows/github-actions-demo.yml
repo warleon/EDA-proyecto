@@ -15,11 +15,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Build
+    - name: test
       run: |
         mkdir build
         cd build
         cmake ..
-    - name: Test
-      run: |
         ctest
