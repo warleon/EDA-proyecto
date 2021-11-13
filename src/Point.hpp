@@ -15,15 +15,13 @@ struct Point {
   T data;
 
   void setCoords(coord_t coords_[N]) {
+    null_ = false;
     for (std::size_t i = 0; i < N; i++) {
       coords[i] = coords_[i];
     }
   }
 
-  Point(coord_t coords_[N]) {
-    null_ = false;
-    setCoords(coords_);
-  }
+  Point(coord_t coords_[N]) { setCoords(coords_); }
 
   Point() {
     null_ = true;
@@ -53,5 +51,22 @@ struct Point {
   coord_t distAlong(point_t x, size_t d) {
     assert(!x.null() && !null() && d < N);
     return std::abs(coords[d] - x.coords[d]);
+  }
+  template <class os_t>
+  friend os_t& operator<<(os_t& os, point_t p) {
+    if (p.null()) {
+      os << "[]";
+    } else {
+      os << "[";
+      for (size_t i = 0; i < p.dim(); i++) {
+        os << p[i];
+        if (i < p.dim() - 1) {
+          os << ", ";
+        }
+      }
+
+      os << "]";
+    }
+    return os;
   }
 };

@@ -3,6 +3,7 @@ project(EdaProyect)
 
 # GoogleTest requires at least C++11
 set(CMAKE_CXX_STANDARD 11)
+set( CMAKE_CXX_FLAGS "-Wall -g -fsanitize=address" )
 
 include(FetchContent)
 FetchContent_Declare(

@@ -13,13 +13,18 @@ class RTree {
 
  public:
   RTree() { root = new node_t; }
-  ~RTree() {}
+  ~RTree() {
+    if(root)delete root;
+  }
 
   bool insert(point_t p) {
-    if (root->null()) {                // only root could be null
+    assert(!p.null() && root);
+    if (root->null()) {               // only root could be null
       return root->box.tryInsert(p);  // should return true
     }
-    return root->insert(p);
+    root->insert(p);
+    if (root->p) root = root->p;
+    return true;
   }
   pointSet_t getRegion(point_t a, point_t b) {
     pointSet_t result;

@@ -1,10 +1,11 @@
 #include <gtest/gtest.h>
 
 #include <Point.hpp>
+#include <iostream>
 using point_t = Point<int, double, 2>;
 
+double points[][2] = {{5, 5}, {0, 0}, {10, 10}};
 TEST(PointTest, betweenTest) {
-  double points[3][2] = {{5, 5}, {0, 0}, {10, 10}};
   point_t p1(points[0]);
   point_t p2(points[1]);
   point_t p3(points[2]);
@@ -15,4 +16,8 @@ TEST(PointTest, betweenTest) {
   EXPECT_TRUE(r1);
   EXPECT_FALSE(r2);
 }
-TEST(PointTest, DefaultTest) { }
+TEST(PointTest, PrintTest) {
+  point_t p1(points[0]);
+  std::cerr << p1 << "\n";
+}
+TEST(PointTest, DefaultTest) {}

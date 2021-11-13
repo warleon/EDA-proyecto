@@ -14,13 +14,13 @@ struct RTreeNode {
   node_t* p = nullptr;  // parent for recursive spliting
   node_t* sons[M] = {0};
 
-  RTreeNode() { box.setMaxSize(M); }
-  RTreeNode(bbox_t b) : box(b) { b.setMaxSize(M); }
+  RTreeNode() {}
+  RTreeNode(bbox_t b) : box(b) {}
 
   bool null() { return box.null(); }
   bool isLeaf() {
     assert(!box.null());
-    return box.content;
+    return box.content.size();
   }
   bool isFull() {
     assert(!null());
@@ -141,6 +141,7 @@ struct RTreeNode {
         p->trySplit(nLeaf);
       else {
         p = new node_t();
+        //
         p->trySplit(this);
         p->trySplit(nLeaf);
       }
@@ -158,4 +159,19 @@ struct RTreeNode {
   }
 
   // RTreeNode* operator[](size_t i) { return sons[i]; }
+  template <class os_t>
+  friend os_t& operator<<(os_t& os, node_t* n) {
+    if (!n) return os << "(){}";
+    if (n->isLeaf()) {
+      os << n->box;
+    } else {
+      size_t i;
+      os << "(" << n->box << "){\n";
+      for (i = 0; i < n->size(); i++) {
+        os << n->sons[i] << "\n";
+      }
+      os << "}";
+    }
+    return os;
+  }
 };

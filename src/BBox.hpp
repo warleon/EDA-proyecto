@@ -1,19 +1,17 @@
 #pragma once
 #include <cassert>
 #include <cmath>
+#include <vector>
 
-template <class Point_t>
+template <class Point_t, size_t maxSize>
 struct BBox {
   using point_t = Point_t;
-  using bbox_t = BBox<Point_t>;
+  using bbox_t = BBox<Point_t, maxSize>;
   using coord_t = typename point_t::coord_t;
-
- private:
-  size_t maxSize = 0;
 
  public:
   point_t corners[2];
-  point_t* content;
+  std::vector<point_t> content;
 
   BBox() {}
   /*maybe not necesary yet
@@ -28,17 +26,13 @@ struct BBox {
   }
   */
   BBox(point_t a, point_t b) {
-    content = nullptr;
     corners[0] = a;
     corners[1] = b;
   }
-  ~BBox() {
-    if (content) delete content;
-  }
-  void setMaxSize(size_t s) { maxSize = s; }
+  ~BBox() {}
   bool null() { return corners[0].null() || corners[1].null(); }
   void resize(point_t a, point_t b) {
-    assert(!content);
+    assert(!content.size());
     corners[0] = a;
     corners[1] = b;
   }
@@ -65,7 +59,7 @@ struct BBox {
 
   bool isFull() {
     assert(maxSize != 0);
-    if (!content) return false;
+    if (!content.size()) return false;
     for (size_t i = 0; i < maxSize; i++) {
       if (content[i].null()) {
         return false;
@@ -76,7 +70,7 @@ struct BBox {
   // tries to insert p in content but fails if is full
   bool tryInsert(point_t p) {
     assert(maxSize != 0);
-    if (!content) content = new point_t[maxSize];
+    if (!content.size()) content.resize(maxSize);
     for (size_t i = 0; i < maxSize; i++) {
       if (content[i].null()) {
         content[i] = p;
@@ -88,7 +82,7 @@ struct BBox {
     return false;
   }
   coord_t min(size_t d) {
-    assert(maxSize != 0 && content);
+    assert(maxSize != 0 && content.size());
     coord_t r = content[0][d];
     for (size_t i = 0; i < maxSize; i++) {
       if (content[i].null()) continue;
@@ -97,7 +91,7 @@ struct BBox {
     return r;
   }
   coord_t max(size_t d) {
-    assert(maxSize != 0 && content);
+    assert(maxSize != 0 && content.size());
     coord_t r = content[0][d];
     for (size_t i = 0; i < maxSize; i++) {
       if (content[i].null()) continue;
@@ -128,5 +122,27 @@ struct BBox {
       r *= std::abs(corners[0][i] - corners[1][i]);
     }
     return r;
+  }
+
+  size_t size() { return maxSize; }
+  template <class os_t>
+  friend os_t& operator<<(os_t& os, bbox_t b) {
+    if (b.null()) {
+      os << "[]";
+    } else {
+      os << "[";
+      os << b.corners[0] << ", " << b.corners[1];
+      os << "]";
+      if (b.content.size()) {
+        os << "-> ";
+        for (size_t i = 0; i < b.content.size(); i++) {
+          os << b.content[i];
+          if (i < b.content.size() - 1) {
+            os << " ";
+          }
+        }
+      }
+    }
+    return os;
   }
 };
