@@ -15,15 +15,20 @@ struct RTreeNode {
   node_t* sons[M] = {0};
 
   RTreeNode() {}
+  ~RTreeNode() {
+    for (size_t i = 0; i < M; i++) {
+      if (sons[i]) delete sons[i];
+    }
+  }
   RTreeNode(bbox_t b) : box(b) {}
 
   bool null() { return box.null(); }
   bool isLeaf() {
-    assert(!box.null());
+    // assert(!box.null());
     return box.content.size();
   }
   bool isFull() {
-    assert(!null());
+    if (null()) return false;
     if (!isLeaf()) {
       for (size_t i = 0; i < M; i++) {
         if (!sons[i]) {
@@ -37,7 +42,7 @@ struct RTreeNode {
 
   size_t size() { return M; }
   coord_t min(size_t d) {
-    assert(!null() && sons[0]);
+    assert(sons[0]);
     coord_t m =
         std::min(sons[0]->box.corners[0][d], sons[0]->box.corners[1][d]);
     coord_t curr = m;
@@ -50,7 +55,7 @@ struct RTreeNode {
     return m;
   }
   coord_t max(size_t d) {
-    assert(!null() && sons[0]);
+    assert(sons[0]);
     coord_t m =
         std::max(sons[0]->box.corners[0][d], sons[0]->box.corners[1][d]);
     coord_t curr = m;
@@ -63,7 +68,6 @@ struct RTreeNode {
     return m;
   }
   void resize() {
-    assert(!null());
     const size_t d = box.corners[0].dim();
     coord_t a[d], b[d];
     for (size_t i = 0; i < d; i++) {
@@ -88,6 +92,7 @@ struct RTreeNode {
     if (!n) return;
     if (!isFull()) {
       assert(tryAddNode(n));
+      resize();
       return;
     }
     node_t* nNode = new node_t();
@@ -163,7 +168,7 @@ struct RTreeNode {
   friend os_t& operator<<(os_t& os, node_t* n) {
     if (!n) return os << "(){}";
     if (n->isLeaf()) {
-      os << n->box;
+      os << "(" << n->box << "){}";
     } else {
       size_t i;
       os << "(" << n->box << "){\n";

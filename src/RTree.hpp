@@ -14,7 +14,7 @@ class RTree {
  public:
   RTree() { root = new node_t; }
   ~RTree() {
-    if(root)delete root;
+    if (root) delete root;
   }
 
   bool insert(point_t p) {
@@ -30,5 +30,9 @@ class RTree {
     pointSet_t result;
     // TODO
     return result;
+  }
+  template <class os_t>
+  friend os_t& operator<<(os_t& os, RTree<node_t>& n) {
+    return os << n.root;
   }
 };
