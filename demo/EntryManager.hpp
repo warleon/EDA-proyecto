@@ -1,55 +1,61 @@
 #pragma once
+#include <algorithm>
+#include <cassert>
+#include <cstring>
 #include <fstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
+struct entry {
+  const char* fileName;
+  size_t offset, size;
+
+  entry() {}
+  entry(const std::string& s, size_t a, size_t b)
+      : fileName(s.c_str()), offset(a), size(b) {}
+
+  std::string content() {
+    assert(strlen(fileName) != 0);
+    std::ifstream file(fileName);
+    std::string value;
+    value.resize(size);
+    file.seekg(offset);
+    file.read(&value[0], value.size());
+    return value;
+  }
+};
 
 class EntryManager {
-  using offSize_t = std::pair<size_t, size_t>;
-  using offSize_set_t = std::vector<offSize_t>;
-  std::unordered_map<std::string, offSize_set_t> filePtrs;
+  size_t count;
+  std::vector<std::string> filenames;
+  std::unordered_map<size_t, entry> entrys;
 
  public:
-  EntryManager(){};
+  EntryManager() { count = 0; };
   ~EntryManager(){};
-
-  void add(std::string key, size_t pos, size_t size) {
-    offSize_t os = std::make_pair(pos, size);
-    if (filePtrs.find(key) == filePtrs.end()) {
-      filePtrs.insert(std::make_pair(key, offSize_set_t(1)));
+  size_t add(std::string key, size_t pos, size_t size) {
+    auto it = std::find(filenames.begin(), filenames.end(), key);
+    if (it == filenames.end()) {
+      filenames.push_back(key);
+      entry ent(filenames.back(), pos, size);
+      entrys.insert(std::make_pair(count++, ent));
+    } else {
+      entry ent(*it, pos, size);
+      entrys.insert(std::make_pair(count++, ent));
     }
-    filePtrs[key].push_back(os);
+    return count - 1;
   }
-  std::vector<std::string> FetchContent() {
-    std::vector<std::string> result;
-
-    for (const auto& entry : filePtrs) {
-      std::ifstream file(entry.first);
-      for (const auto& it : entry.second) {
-        std::string s;
-        s.resize(it.second);
-        file.seekg(it.first);
-        file.read(&s[0], s.size());
-        result.push_back(s);
-      }
+  std::vector<std::pair<size_t, entry>> fetchAll() {
+    std::vector<std::pair<size_t, entry>> result;
+    for (auto it : entrys) {
+      result.push_back(it);
     }
-
     return result;
   }
+  entry get(size_t id) { return entrys[id]; }
   template <class os_t>
   friend os_t& operator<<(os_t& os, EntryManager e) {
-    for (const auto& entry : e.filePtrs) {
-      os << entry.first << "{\n";
-      std::ifstream file(entry.first);
-      for (const auto& it : entry.second) {
-        std::string s;
-        s.resize(it.second);
-        file.seekg(it.first);
-        file.read(&s[0], s.size());
-        os << s << "\n";
-      }
-    }
-    return os << "}";
+    return os;
   }
 };
