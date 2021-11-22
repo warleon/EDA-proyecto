@@ -33,6 +33,7 @@
 
 #extra
 build/
-data/
+*.csv
+.~*
 config/
 .vscode
