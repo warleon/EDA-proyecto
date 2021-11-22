@@ -3,7 +3,7 @@ project(EdaProyect)
 
 # GoogleTest requires at least C++11
 set(CMAKE_CXX_STANDARD 11)
-set( CMAKE_CXX_FLAGS "-Wall -g -fsanitize=address" )
+set( CMAKE_CXX_FLAGS "-Wall -Werror -g -fsanitize=address" )
 
 include(FetchContent)
 FetchContent_Declare(
@@ -14,9 +14,17 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+
+include_directories(demo)
+link_directories(demo)
+add_executable(
+  Demo
+  demo/main.cpp
+)
+
+
 include_directories(src)
 link_directories(src)
-
 enable_testing()
 
 add_executable(
