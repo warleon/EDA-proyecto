@@ -32,7 +32,7 @@ if(NOT json_POPULATED)
   add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
-target_link_libraries(Demo PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(Demo PRIVATE nlohmann_json::nlohmann_json )
 
 include_directories(src)
 link_directories(src)

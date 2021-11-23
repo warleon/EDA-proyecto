@@ -1,0 +1,52 @@
+#pragma once
+
+#include <fstream>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+class CSVReader {
+  std::unordered_map<std::string, size_t> nameMap;
+  std::ifstream file;
+  char sep;
+  std::vector<std::string> currentLine;
+  size_t currentLineSize;
+
+ public:
+  using iterator = std::vector<std::string>::iterator;
+  CSVReader(std::string filename, char sep_) : sep(sep_) {
+    file.open(filename);
+    next();
+    // load name index
+    for (size_t i = 0; i < currentLine.size(); ++i) {
+      nameMap[currentLine[i]] = i;
+    }
+  }
+  ~CSVReader() { file.close(); }
+
+  static std::vector<std::string> split(const std::string& s, char sep) {
+    std::vector<std::string> result;
+    size_t from = 0, to = -1;
+    do {
+      from = to + 1;
+      to = s.find(sep, from);
+      result.push_back(s.substr(from, to - from));
+    } while (to != std::string::npos);
+    return result;
+  }
+
+  void next() {
+    std::string line;
+    file >> line;
+    currentLine = split(line, sep);
+    currentLineSize = line.size();
+  }
+  bool ok() { return file.good(); }
+  std::string operator()(const std::string& index) {
+    return currentLine[nameMap[index]];
+  }
+  std::string operator[](size_t index) { return currentLine[index]; }
+  size_t fileOffset() { return file.tellg(); }
+  iterator begin() { return currentLine.begin(); }
+  iterator end() { return currentLine.end(); }
+};
