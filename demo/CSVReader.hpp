@@ -37,7 +37,7 @@ class CSVReader {
 
   void next() {
     std::string line;
-    file >> line;
+    std::getline(file, line);
     currentLine = split(line, sep);
     currentLineSize = line.size();
   }
@@ -47,6 +47,7 @@ class CSVReader {
   }
   std::string operator[](size_t index) { return currentLine[index]; }
   size_t fileOffset() { return file.tellg(); }
+  size_t size() { return currentLineSize; }
   iterator begin() { return currentLine.begin(); }
   iterator end() { return currentLine.end(); }
 };
