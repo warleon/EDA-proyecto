@@ -31,17 +31,12 @@ int main(int argc, char** argv) {
   std::string configFilePath = argv[1];
   std::ifstream configFile(configFilePath);
   EntryManager manager;
-  size_t max;
-  if (argc > 2) {
-    max = std::stoul(argv[2]);
-  } else {
-    max = 20;
-  }
 
   json config;
   configFile >> config;
+  size_t max = config["max"];
 
-  std::cout << config.dump() << std::endl;
+  // std::cout << config.dump() << std::endl;
   size_t entryId;
   const size_t dim = config["coordNames"].size();
 
@@ -49,7 +44,7 @@ int main(int argc, char** argv) {
   rtree_t tree;
 
   for (size_t i = 0; i < config["files"].size(); i++) {
-    std::cout << config["files"][i] << std::endl;
+    // std::cout << config["files"][i] << std::endl;
     CSVReader reader(config["files"][i], ',');
     while (reader.ok() && entryId < max) {
       reader.next();
@@ -65,6 +60,6 @@ int main(int argc, char** argv) {
       tree.insert(temp);
     }
   }
-  std::cout << tree;
+  // std::cout << tree;
   return 0;
 }
