@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <BBox.hpp>
+#include <DiskNode.hpp>
 #include <Point.hpp>
 #include <RTreeNode.hpp>
 
@@ -14,3 +15,5 @@ TEST(RTreeNodeTest, InsertTest) {}
 TEST(RTreeNodeTest, IsLeafTest) {}
 TEST(RTreeNodeTest, PrintTest) {}
 TEST(RTreeNodeTest, DefaultTest) {}
+
+TEST(DiskNodeTest, DefaultTest) {}

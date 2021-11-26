@@ -14,7 +14,7 @@ class DiskNode;
 
 template <class node_t, size_t size>
 class Pool {
-  friend class node_t;
+  friend node_t;
   using id_t = size_t;
   using pos_t = size_t;
 
@@ -25,7 +25,7 @@ class Pool {
   fs::path home, ext;
 
   // clock evict policy returns position to evict
-  pos__t chooseToEvict() {
+  pos_t chooseToEvict() {
     pos_t t;
     while (true) {
       t = tick();
@@ -54,28 +54,28 @@ class Pool {
   // reads a node from disk and places it at pos if pos is dirty writes the
   // dirty node to disk
   node_t* fetchTo(id_t id, pos_t pos) {
-    fs::path inPath(std::to_string(id) + ext);
     if (dirty[pos]) {
       write(pos);
       dirty.reset(pos);
     }
-    std::ifstream is(home + path);
+    fs::path inPath(fs::path(std::to_string(id)) / ext);
+    std::ifstream is(home / inPath);
     is >> *pool[pos];
     return pool[pos];
   }
   void write(pos_t pos) {
     fs::path outPath(std::to_string(posToId[pos]) + ext);
-    std::ofstream os(home + path);
+    std::ofstream os(home / outPath);
     os << *pool[pos];
     os.close();
   }
 
  public:
-  Pool(std::string s = "./", std::string e = ".node") : home(s), ext(e) {
-    home += "nodes/";
+  Pool(std::string s = ".", std::string e = ".node") : home(s), ext(e) {
+    home /= "nodes";
     fs::create_directory(home);
     // populate pool with null nodes
-    for (autoa& it : pool) {
+    for (auto& it : pool) {
       it = new node_t;
     }
   }
@@ -91,8 +91,8 @@ class Pool {
   }
 
   bool exists(id_t i) {
-    fs::path p(to_string(i) + ext);
-    return fs::exists(home + p);
+    fs::path p(fs::path(std::to_string(i)) / ext);
+    return fs::exists(home / p);
   }
 
   // gets a pointer to the node with id
@@ -118,9 +118,9 @@ class Pool {
   // create a file to hold a node
   size_t create() {
     id_t t = createId();
-    fs::path path(std::to_string(t) + ext);
+    fs::path path(fs::path(std::to_string(t)) / ext);
 
-    std::ofstream file(home + path);
+    std::ofstream file(home / path);
     file.close();
 
     return t;

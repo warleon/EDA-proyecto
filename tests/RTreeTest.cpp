@@ -7,7 +7,6 @@
 #include <RTreeNode.hpp>
 #include <iostream>
 
-
 using point_t = Point<int, double, 2>;
 using bbox_t = BBox<point_t, 3>;
 using node_t = RTreeNode<bbox_t, 3>;
