@@ -11,6 +11,9 @@ using point_t = Point<int, double, 2>;
 using bbox_t = BBox<point_t, 3>;
 using node_t = RTreeNode<bbox_t, 3>;
 using rtree_t = RTree<node_t>;
+using dnode_t = DiskNode<500, bbox_t, 3>;
+using pool_t = typename dnode_t::pool_t;
+using dtree_t = DiskRTree<dnode_t>;
 
 // Demonstrate some basic assertions.
 TEST(RTreeTest, insertTest) {
@@ -27,4 +30,4 @@ TEST(RTreeTest, insertTest) {
   std::cerr << 10 << "\n";
   std::cerr << testTree << "\n";
 }
-TEST(RTreeTest, DefaultTest) {}
+TEST(RTreeTest, DefaultTest) { dtree_t testTree; }

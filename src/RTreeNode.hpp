@@ -179,4 +179,5 @@ struct RTreeNode {
     }
     return os;
   }
+  static node_t* get(size_t n) { return new node_t; }
 };

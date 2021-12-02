@@ -6,11 +6,9 @@
 #include <fstream>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 namespace fs = std::filesystem;
-
-template <class pool_t, size_t M>
-class DiskNode;
 
 template <class node_t, size_t size>
 class Pool {
@@ -47,7 +45,7 @@ class Pool {
   pos_t tick() {
     static pos_t count = 0;
     pos_t t = count;
-    count = ++count % size;
+    count = (count + 1) % size;
     return t;
   }
 
@@ -64,7 +62,7 @@ class Pool {
     return pool[pos];
   }
   void write(pos_t pos) {
-    fs::path outPath(std::to_string(posToId[pos]) + ext);
+    fs::path outPath(std::to_string(posToId[pos]) + ext.string());
     std::ofstream os(home / outPath);
     os << *pool[pos];
     os.close();
@@ -111,6 +109,8 @@ class Pool {
         posToId[e] = id;
       }
     } else {  // when null id create node
+      id = create();
+      return get(id);
     }
 
     return node;
@@ -127,18 +127,48 @@ class Pool {
   }
 };
 
-template <class pool_t, size_t M>
+template <size_t pool_size, class BBox_t, size_t M>
 class DiskNode {
-  using node_t = DiskNode<pool_t, M>;
+ public:
+  using bbox_t = BBox_t;
+  using node_t = DiskNode<pool_size, bbox_t, M>;
+  using pool_t = Pool<node_t, pool_size>;
   using id_t = typename pool_t::id_t;
   using pos_t = typename pool_t::pos_t;
+
+ private:
   friend pool_t;
-  static pool_t pool;
   // TODO
-  std::array<id_t, M> sons;
+
+  inline static pool_t pool;
+  bbox_t box;
+  id_t parentId;
+  id_t selfId;
+  std::array<id_t, M> sonsId = {0};
 
  public:
   // TODO
+  DiskNode() {
+    selfId = 0;
+    parentId = 0;
+  }
+
+  bool null() { return box.null(); }
+  /*
+    void* operator new(size_t size) {
+      id_t id = 0;
+      auto node = node_t::pool.get(id);
+      node->selfId = id;
+      return node;
+    }
+    */
+
+  static node_t* get(size_t id) {
+    auto node = node_t::pool.get(id);
+    node->selfId = id;
+    return node;
+  }
+
   template <class os_t>
   friend os_t& operator<<(os_t& os, node_t& node) {
     return os;
@@ -146,5 +176,39 @@ class DiskNode {
   template <class is_t>
   friend is_t& operator>>(is_t& is, node_t& node) {
     return is;
+  }
+};
+
+template <class node_t>
+class DiskRTree {
+  using bbox_t = typename node_t::bbox_t;
+  using point_t = typename bbox_t::point_t;
+  using id_t = typename node_t::id_t;
+  using pointSet_t = std::vector<point_t>;
+
+  id_t rootId;
+
+ public:
+  DiskRTree() { rootId = 0; }
+  ~DiskRTree() {}
+
+  bool insert(point_t p) {
+    auto root = node_t::get(rootId);
+    assert(!p.null() && root);
+    if (root->null()) {               // only root could be null
+      return root->box.tryInsert(p);  // should return true
+    }
+    root->insert(p);
+    if (root->p) root = root->p;
+    return true;
+  }
+  pointSet_t getRegion(point_t a, point_t b) {
+    pointSet_t result;
+    // TODO
+    return result;
+  }
+  template <class os_t>
+  friend os_t& operator<<(os_t& os, DiskRTree<node_t>& n) {
+    return os << n.root;
   }
 };
