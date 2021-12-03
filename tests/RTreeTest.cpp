@@ -15,6 +15,8 @@ using dnode_t = DiskNode<500, bbox_t, 3>;
 using pool_t = typename dnode_t::pool_t;
 using dtree_t = DiskRTree<dnode_t>;
 
+double ps[][2] = {{0, 0}, {10, 10}, {5, 5}, {15, 15}};
+
 // Demonstrate some basic assertions.
 TEST(RTreeTest, insertTest) {
   rtree_t testTree;
@@ -30,4 +32,17 @@ TEST(RTreeTest, insertTest) {
   std::cerr << 10 << "\n";
   std::cerr << testTree << "\n";
 }
-TEST(RTreeTest, DefaultTest) { dtree_t testTree; }
+TEST(DiskRTreeTest, DefaultTest) { dtree_t testTree; }
+TEST(DiskRTreeTest, insertTest) {
+  point_t a(ps[0]), b(ps[1]), c(ps[2]), d(ps[3]);
+  dtree_t testTree;
+  std::cerr << testTree << "\n";
+  testTree.insert(a);
+  std::cerr << testTree << "\n";
+  testTree.insert(b);
+  std::cerr << testTree << "\n";
+  testTree.insert(c);
+  std::cerr << testTree << "\n";
+  testTree.insert(d);
+  std::cerr << testTree << "\n";
+}

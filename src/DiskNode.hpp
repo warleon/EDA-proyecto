@@ -128,8 +128,7 @@ class Pool {
 };
 
 template <size_t pool_size, class BBox_t, size_t M>
-class DiskNode {
- public:
+struct DiskNode {
   using bbox_t = BBox_t;
   using point_t = typename bbox_t::point_t;
   using coord_t = typename point_t::coord_t;
@@ -138,9 +137,7 @@ class DiskNode {
   using id_t = typename pool_t::id_t;
   using pos_t = typename pool_t::pos_t;
 
- private:
   friend pool_t;
-  // TODO
 
   inline static pool_t pool;
   bbox_t box;
@@ -148,9 +145,8 @@ class DiskNode {
   id_t selfId;
   std::array<id_t, M> sonsId = {0};
 
-  void setDirty() { node_t::pool.dirty.set(node_t::pool.idToPos(selfId)); }
+  void setDirty() { node_t::pool.dirty.set(node_t::pool.idToPos[selfId]); }
 
- public:
   static node_t* get(size_t id) {
     auto node = node_t::pool.get(id);
     node->selfId = id;
@@ -264,7 +260,7 @@ class DiskNode {
   }
   template <class is_t>
   friend is_t& operator>>(is_t& is, node_t& node) {
-    setDirty();
+    node.setDirty();
     return is;
   }
 };
@@ -290,7 +286,9 @@ class DiskRTree {
       return root->box.tryInsert(p);  // should return true
     }
     root->insert(p);
-    if (root->p) root = root->p;
+    if (root->parentId) {
+      rootId = root->parentId;
+    }
     return true;
   }
   pointSet_t getRegion(point_t a, point_t b) {
@@ -300,6 +298,8 @@ class DiskRTree {
   }
   template <class os_t>
   friend os_t& operator<<(os_t& os, DiskRTree<node_t>& n) {
-    return os << n.root;
+    auto root = node_t::get(n.rootId);
+    assert(root);
+    return os << *root;
   }
 };
