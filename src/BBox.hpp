@@ -26,6 +26,7 @@ struct BBox {
   }
   */
   BBox(point_t a, point_t b) {
+    assert(maxSize);
     corners[0] = a;
     corners[1] = b;
   }
@@ -82,7 +83,7 @@ struct BBox {
     return false;
   }
   coord_t min(size_t d) {
-    assert(maxSize != 0 && content.size());
+    assert(content.size());
     coord_t r = content[0][d];
     for (size_t i = 0; i < maxSize; i++) {
       if (content[i].null()) continue;
@@ -91,7 +92,7 @@ struct BBox {
     return r;
   }
   coord_t max(size_t d) {
-    assert(maxSize != 0 && content.size());
+    assert(content.size());
     coord_t r = content[0][d];
     for (size_t i = 0; i < maxSize; i++) {
       if (content[i].null()) continue;
@@ -101,7 +102,6 @@ struct BBox {
   }
   // dummy way
   bbox_t trySplit(point_t p) {
-    assert(maxSize);
     bbox_t nBox;
     if (!isFull()) {
       assert(tryInsert(p));
