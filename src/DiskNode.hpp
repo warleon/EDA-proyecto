@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <bitset>
 #include <filesystem>
@@ -7,6 +8,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -149,6 +151,7 @@ struct DiskNode {
 
   static node_t* get(size_t id) {
     auto node = node_t::pool.get(id);
+    assert(node);
     node->selfId = id;
     return node;
   }
@@ -242,10 +245,32 @@ struct DiskNode {
   }
 
   bool null() { return box.null(); }
-  void insert(const point_t& point) {
+  // true if box has to be resized
+  bool insert(const point_t& p) {
     if (isLeaf()) {
-      return setDirty();
+      setDirty();
+
+    } else {  // since is nonLeaf it has at least one child
+      // get minimum Area enlargment bbox
+      node_t* chosen = nullptr;
+      for (auto sId : sonsId) {
+        if (!sId) continue;
+        auto son = node_t::get(sId);
+        if (!chosen || son->box.area(p) < chonsen->box.area(p)) {
+          chosen = son;
+        }
+      }
+      bool resizeNeeded = false;
+      // check if box needs to be resized
+      if (chonsen->box.area(p) != chosen->box.area()) resizeNeeded = true;
+      // resize after insertion
+      chosen->insert(p);
+      if (resizeNeeded) {
+        setDirty();
+        resize();
+      }
     }
+    return resizeNeeded;
   }
 
   template <class os_t>
@@ -262,44 +287,5 @@ struct DiskNode {
   friend is_t& operator>>(is_t& is, node_t& node) {
     node.setDirty();
     return is;
-  }
-};
-
-template <class node_t>
-class DiskRTree {
-  using bbox_t = typename node_t::bbox_t;
-  using point_t = typename bbox_t::point_t;
-  using id_t = typename node_t::id_t;
-  using pointSet_t = std::vector<point_t>;
-
-  id_t rootId;
-
- public:
-  DiskRTree() { rootId = 0; }
-  ~DiskRTree() {}
-
-  bool insert(point_t p) {
-    auto root = node_t::get(rootId);
-    rootId = root->id();
-    assert(!p.null() && root);
-    if (root->null()) {               // only root could be null
-      return root->box.tryInsert(p);  // should return true
-    }
-    root->insert(p);
-    if (root->parentId) {
-      rootId = root->parentId;
-    }
-    return true;
-  }
-  pointSet_t getRegion(point_t a, point_t b) {
-    pointSet_t result;
-    // TODO
-    return result;
-  }
-  template <class os_t>
-  friend os_t& operator<<(os_t& os, DiskRTree<node_t>& n) {
-    auto root = node_t::get(n.rootId);
-    assert(root);
-    return os << *root;
   }
 };
