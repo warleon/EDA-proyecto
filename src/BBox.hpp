@@ -119,12 +119,31 @@ struct BBox {
     coord_t r = 1;
     std::size_t n = corners[0].dim();
     for (std::size_t i = 0; i < n; i++) {
-      r *= std::abs(corners[0][i] - corners[1][i]);
+      auto min = std::min(corners[0][i], corners[1][i]);
+      auto max = std::max(corners[0][i], corners[1][i]);
+      r *= max - min;  // diference always positive
+    }
+    return r;
+  }
+  coord_t area(point_t p) {
+    coord_t r = 1;
+    std::size_t n = corners[0].dim();
+    for (std::size_t i = 0; i < n; i++) {
+      auto min = std::min(std::min(corners[0][i], corners[1][i]), p[i]);
+      auto max = std::max(std::max(corners[0][i], corners[1][i]), p[i]);
+      r *= max - min;  // diference always positive
     }
     return r;
   }
 
   size_t size() { return maxSize; }
+
+  bbox_t& operator=(bbox_t& other) {
+    corners = other.corners;
+    content = other.content;
+    return *this;
+  }
+
   template <class os_t>
   friend os_t& operator<<(os_t& os, bbox_t b) {
     if (b.null()) {

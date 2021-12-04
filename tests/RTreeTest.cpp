@@ -2,10 +2,12 @@
 
 #include <BBox.hpp>
 #include <DiskNode.hpp>
+#include <DiskRTree.hpp>
 #include <Point.hpp>
 #include <RTree.hpp>
 #include <RTreeNode.hpp>
 #include <iostream>
+
 
 using point_t = Point<int, double, 2>;
 using bbox_t = BBox<point_t, 3>;
