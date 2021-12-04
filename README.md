@@ -19,12 +19,13 @@ touch config.json
 paste the following in config.json
 ```json
 {
-    "layout": {
-        "Pickup_longitude": "long double",
-        "Pickup_latitude": "long double"
-    },
+    "coordNames": [
+        "Pickup_longitude",
+        "Pickup_latitude"
+    ],
     "files": [
         "paste here the absolute paths to the files you downloaded previously"
-    ]
+    ],
+    "max": 1000000
 }
 ```
