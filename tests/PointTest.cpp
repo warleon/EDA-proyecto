@@ -2,6 +2,8 @@
 
 #include <Point.hpp>
 #include <iostream>
+#include <sstream>
+#include <string>
 using point_t = Point<int, double, 2>;
 
 double points[][2] = {{5, 5}, {0, 0}, {10, 10}};
@@ -19,5 +21,21 @@ TEST(PointTest, betweenTest) {
 TEST(PointTest, PrintTest) {
   point_t p1(points[0]);
   std::cerr << p1 << "\n";
+}
+TEST(PointTest, JsonTest) {
+  point_t tPoint;
+  std::string json = R"(
+    {
+      "null_":false,
+      "coords":[1,2],
+      "data": 4
+    }
+  )";
+  std::stringstream ss;
+  ss << json;
+  ss >> tPoint;
+  std::cerr << "\n";
+  std::cerr << tPoint;
+  std::cerr << "\n";
 }
 TEST(PointTest, DefaultTest) {}

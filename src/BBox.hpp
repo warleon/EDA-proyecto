@@ -1,7 +1,10 @@
 #pragma once
 #include <cassert>
 #include <cmath>
+#include <nlohmann/json.hpp>
 #include <vector>
+
+using json = nlohmann::json;
 
 template <class Point_t, size_t maxSize>
 struct BBox {
@@ -138,21 +141,22 @@ struct BBox {
 
   size_t size() { return maxSize; }
 
-  /*
-    bbox_t& operator=(bbox_t& other) {
-      corners = other.corners;
-      content = other.content;
-      return *this;
-    }
-  */
+ public:
   // Json format output
   template <class os_t>
-  friend os_t& operator<<(os_t& os, bbox_t& node) {
-    return os;
+  friend os_t& operator<<(os_t& os, bbox_t& box) {
+    json format = box;
+
+    return os << format;
   }
   // Json format input
   template <class is_t>
-  friend is_t& operator>>(is_t& is, bbox_t& node) {
+  friend is_t& operator>>(is_t& is, bbox_t& box) {
+    json format;
+    is >> format;
+    box = format;
     return is;
   }
+
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(bbox_t, corners, content)
 };

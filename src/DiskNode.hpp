@@ -304,14 +304,21 @@ struct DiskNode {
     return 0;
   }
 
+ public:
   // Json format output
   template <class os_t>
   friend os_t& operator<<(os_t& os, node_t& node) {
-    return os;
+    json format = node;
+    return os << format;
   }
   // Json format input
   template <class is_t>
   friend is_t& operator>>(is_t& is, node_t& node) {
+    json format;
+    is >> format;
+    node = format;
     return is;
   }
+
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(node_t, box, parentId, selfId, sonsId)
 };

@@ -1,6 +1,8 @@
 #pragma once
 #include <cassert>
 #include <cmath>
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 template <class T, class Coord_t, size_t N>
 struct Point {
@@ -52,14 +54,23 @@ struct Point {
     assert(!x.null() && !null() && d < N);
     return std::abs(coords[d] - x.coords[d]);
   }
+
+ public:
   // Json format output
   template <class os_t>
-  friend os_t& operator<<(os_t& os, point_t& node) {
-    return os;
+  friend os_t& operator<<(os_t& os, point_t& point) {
+    json format = point;
+
+    return os << format;
   }
   // Json format input
   template <class is_t>
-  friend is_t& operator>>(is_t& is, point_t& node) {
+  friend is_t& operator>>(is_t& is, point_t& point) {
+    json format;
+    is >> format;
+    point = format;
     return is;
   }
+
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(point_t, null_, coords, data)
 };

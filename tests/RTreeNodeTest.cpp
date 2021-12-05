@@ -4,6 +4,7 @@
 #include <DiskNode.hpp>
 #include <Point.hpp>
 #include <RTreeNode.hpp>
+#include <iostream>
 
 using point_t = Point<int, double, 2>;
 using bbox_t = BBox<point_t, 3>;
@@ -20,4 +21,8 @@ TEST(RTreeNodeTest, PrintTest) {}
 TEST(RTreeNodeTest, DefaultTest) {}
 */
 
-TEST(DiskNodeTest, DefaultTest) { dnode_t testNode[100]; }
+TEST(DiskNodeTest, DefaultTest) {
+  dnode_t testNode[100];
+  std::cerr << testNode[0] << "\n";
+  std::cerr << testNode[1] << "\n";
+}
