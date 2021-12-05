@@ -15,8 +15,8 @@ class DiskRTree {
 
   bool insert(point_t p) {
     auto root = node_t::get(rootId);
-    rootId = root->id();
     assert(!p.null() && root);
+    rootId = root->id();
     if (root->null()) {               // only root could be null
       return root->box.tryInsert(p);  // should return true
     }

@@ -5,6 +5,7 @@
 #include <bitset>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <nlohmann/json.hpp>
 #include <sstream>
 #include <string>
@@ -68,20 +69,22 @@ class Pool {
       write(pos);
       dirty.reset(pos);
     }
-    fs::path inPath(fs::path(std::to_string(id)) / ext);
+    fs::path inPath(std::to_string(id) + ext.string());
     std::ifstream is(home / inPath);
+    assert(is.is_open());
     is >> *pool[pos];
     return pool[pos];
   }
   void write(pos_t pos) {
     fs::path outPath(std::to_string(posToId[pos]) + ext.string());
     std::ofstream os(home / outPath);
+    assert(os.is_open());
     os << *pool[pos];
     os.close();
   }
 
  public:
-  Pool(std::string s = ".", std::string e = ".node") : home(s), ext(e) {
+  Pool(std::string s = ".", std::string e = ".json") : home(s), ext(e) {
     home /= "nodes";
     fs::create_directory(home);
     // populate pool with null nodes
@@ -118,10 +121,18 @@ class Pool {
         idToPos.erase(i);
         idToPos[id] = e;
         node = fetchTo(id, e);
+
         posToId[e] = id;
       }
     } else {  // when null id create node
       id = create();
+      node_t nNode;
+      nNode.selfId = id;
+      fs::path outPath(std::to_string(id) + ext.string());
+      std::ofstream os(home / outPath);
+      assert(os.is_open());
+      os << nNode;
+      os.close();
       return get(id);
     }
 
@@ -309,7 +320,8 @@ struct DiskNode {
   template <class os_t>
   friend os_t& operator<<(os_t& os, node_t& node) {
     json format = node;
-    return os << format;
+    os << format;
+    return os;
   }
   // Json format input
   template <class is_t>

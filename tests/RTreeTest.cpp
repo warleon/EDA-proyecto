@@ -40,14 +40,15 @@ TEST(DiskRTreeTest, insertTest1) {
   for (size_t i = 0; i < 9; i++) {
     std::cerr << i << "\n";
     std::cerr << testTree << "\n";
-    ASSERT_TRUE(testTree.insert(point_t(p))) << "The insertion went wrong";
+    (testTree.insert(point_t(p)));
   }
   std::cerr << 9 << "\n";
   std::cerr << testTree << "\n";
-  ASSERT_TRUE(testTree.insert(point_t(p))) << "The insertion went wrong";
+  (testTree.insert(point_t(p)));
   std::cerr << 10 << "\n";
   std::cerr << testTree << "\n";
 }
+
 TEST(DiskRTreeTest, insertTest2) {
   point_t a(ps[0]), b(ps[1]), c(ps[2]), d(ps[3]);
   dtree_t testTree;
