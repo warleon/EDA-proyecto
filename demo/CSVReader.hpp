@@ -23,6 +23,13 @@ class CSVReader {
     }
   }
   ~CSVReader() { file.close(); }
+  std::string getline() {
+    std::string line = "";
+    for (auto& t : currentLine) {
+      line += t;
+    }
+    return line;
+  }
 
   static std::vector<std::string> split(const std::string& s, char sep) {
     std::vector<std::string> result;

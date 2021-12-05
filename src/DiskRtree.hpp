@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 template <class node_t>
 class DiskRTree {
   using bbox_t = typename node_t::bbox_t;
@@ -10,6 +11,7 @@ class DiskRTree {
   id_t rootId;
 
  public:
+  // DiskRTree(std::string mainDir = ".", std::string ext = ".json") {}
   DiskRTree() { rootId = 0; }
   ~DiskRTree() {}
 

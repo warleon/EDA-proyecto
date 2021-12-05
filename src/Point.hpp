@@ -24,6 +24,7 @@ struct Point {
   }
 
   Point(coord_t coords_[N]) { setCoords(coords_); }
+  Point(coord_t coords_[N], T d) : data(d) { setCoords(coords_); }
 
   Point() {
     null_ = true;
