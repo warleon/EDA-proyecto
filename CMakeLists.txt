@@ -32,7 +32,7 @@ if(NOT json_POPULATED)
   add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
-target_link_libraries(Demo PRIVATE nlohmann_json::nlohmann_json )
+target_link_libraries(Demo  PRIVATE nlohmann_json::nlohmann_json )
 
 include_directories(src)
 link_directories(src)
@@ -44,6 +44,8 @@ add_executable(
 )
 target_link_libraries(
   RTree
+  PRIVATE
+  nlohmann_json::nlohmann_json
   gtest_main
 )
 add_executable(
@@ -52,6 +54,8 @@ add_executable(
 )
 target_link_libraries(
   Point
+  PRIVATE
+  nlohmann_json::nlohmann_json
   gtest_main
 )
 add_executable(
@@ -60,6 +64,8 @@ add_executable(
 )
 target_link_libraries(
   BBox
+  PRIVATE
+  nlohmann_json::nlohmann_json
   gtest_main
 )
 add_executable(
@@ -68,6 +74,8 @@ add_executable(
 )
 target_link_libraries(
   RTreeNode
+  PRIVATE
+  nlohmann_json::nlohmann_json
   gtest_main
 )
 

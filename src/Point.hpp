@@ -52,21 +52,14 @@ struct Point {
     assert(!x.null() && !null() && d < N);
     return std::abs(coords[d] - x.coords[d]);
   }
+  // Json format output
   template <class os_t>
-  friend os_t& operator<<(os_t& os, point_t p) {
-    if (p.null()) {
-      os << "[]";
-    } else {
-      os << "[";
-      for (size_t i = 0; i < p.dim(); i++) {
-        os << p[i];
-        if (i < p.dim() - 1) {
-          os << ", ";
-        }
-      }
-
-      os << "]";
-    }
+  friend os_t& operator<<(os_t& os, point_t& node) {
     return os;
+  }
+  // Json format input
+  template <class is_t>
+  friend is_t& operator>>(is_t& is, point_t& node) {
+    return is;
   }
 };

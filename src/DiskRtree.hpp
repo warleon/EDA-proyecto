@@ -1,3 +1,4 @@
+#pragma once
 
 template <class node_t>
 class DiskRTree {

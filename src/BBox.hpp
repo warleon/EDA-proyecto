@@ -145,24 +145,14 @@ struct BBox {
       return *this;
     }
   */
+  // Json format output
   template <class os_t>
-  friend os_t& operator<<(os_t& os, bbox_t b) {
-    if (b.null()) {
-      os << "[]";
-    } else {
-      os << "[";
-      os << b.corners[0] << ", " << b.corners[1];
-      os << "]";
-      if (b.content.size()) {
-        os << "-> ";
-        for (size_t i = 0; i < b.content.size(); i++) {
-          os << b.content[i];
-          if (i < b.content.size() - 1) {
-            os << " ";
-          }
-        }
-      }
-    }
+  friend os_t& operator<<(os_t& os, bbox_t& node) {
     return os;
+  }
+  // Json format input
+  template <class is_t>
+  friend is_t& operator>>(is_t& is, bbox_t& node) {
+    return is;
   }
 };

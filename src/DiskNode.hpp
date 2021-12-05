@@ -5,14 +5,22 @@
 #include <bitset>
 #include <filesystem>
 #include <fstream>
+#include <nlohmann/json.hpp>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include <vector>
+using json = nlohmann::json;
 
 #define MAX_SIZE size_t(-1)
 
 namespace fs = std::filesystem;
+
+std::string readAll(std::ifstream& in) {
+  std::ostringstream sstr;
+  sstr << in.rdbuf();
+  return sstr.str();
+}
 
 template <class node_t, size_t size>
 class Pool {
@@ -218,13 +226,15 @@ struct DiskNode {
   id_t split(point_t p) {
     assert(isFull());
     auto node = node_t::get(0);
-    auto nbox = box.trySplit(p);
-    node->box = nbox;
+    assert(node);
+    node->box = box.trySplit(p);
+    node->parentId = parentId;
     return node->selfId;
   }
   id_t split(id_t id) {
     assert(isFull());
     node_t* node = node_t::get(0);
+    assert(node);
     // dummy split algorithm
     for (size_t i = M / 2, j = 0; i < M; i++, j++) {
       node->sonsId[j] = sonsId[i];
@@ -294,19 +304,14 @@ struct DiskNode {
     return 0;
   }
 
+  // Json format output
   template <class os_t>
   friend os_t& operator<<(os_t& os, node_t& node) {
-    os << node.selfId << "\n";
-    os << node.parentId << "\n";
-    os << node.box << "\n";
-    for (auto& s : node.sonsId) {
-      os << s << " ";
-    }
     return os;
   }
+  // Json format input
   template <class is_t>
   friend is_t& operator>>(is_t& is, node_t& node) {
-    node.setDirty();
     return is;
   }
 };
