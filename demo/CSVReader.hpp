@@ -9,10 +9,10 @@ class CSVReader {
   std::unordered_map<std::string, size_t> nameMap;
   std::ifstream file;
   char sep;
-  std::vector<std::string> currentLine;
   size_t currentLineSize;
 
  public:
+  std::vector<std::string> currentLine;
   using iterator = std::vector<std::string>::iterator;
   CSVReader(std::string filename, char sep_) : sep(sep_) {
     file.open(filename);
@@ -26,9 +26,9 @@ class CSVReader {
   std::string getline() {
     std::string line = "";
     for (auto& t : currentLine) {
-      line += t;
+      line += t + ", ";
     }
-    return line;
+    return line.substr(0, line.length() - 2);
   }
 
   static std::vector<std::string> split(const std::string& s, char sep) {

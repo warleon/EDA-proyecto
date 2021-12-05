@@ -16,18 +16,7 @@ struct BBox {
   point_t corners[2];
   std::vector<point_t> content;
 
-  BBox() {}
-  /*maybe not necesary yet
-  BBox(bbox_t other) {
-    maxSize = other.maxSize;
-    corners[0].setCoords(other.corners[0]);
-    corners[1].setCoords(other.corners[1]);
-    if (other.content) {
-    } else {
-      content = nullptr;
-    }
-  }
-  */
+  BBox() { assert(maxSize); }
   BBox(point_t a, point_t b) {
     assert(maxSize);
     corners[0] = a;

@@ -29,6 +29,9 @@ struct Point {
   Point() {
     null_ = true;
     // coords is trash
+    for (auto& c : coords) {
+      c = 0;
+    }
   }
 
   ~Point() = default;
