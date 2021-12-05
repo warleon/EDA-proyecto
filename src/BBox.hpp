@@ -138,12 +138,13 @@ struct BBox {
 
   size_t size() { return maxSize; }
 
-  bbox_t& operator=(bbox_t& other) {
-    corners = other.corners;
-    content = other.content;
-    return *this;
-  }
-
+  /*
+    bbox_t& operator=(bbox_t& other) {
+      corners = other.corners;
+      content = other.content;
+      return *this;
+    }
+  */
   template <class os_t>
   friend os_t& operator<<(os_t& os, bbox_t b) {
     if (b.null()) {

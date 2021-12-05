@@ -8,7 +8,6 @@
 #include <RTreeNode.hpp>
 #include <iostream>
 
-
 using point_t = Point<int, double, 2>;
 using bbox_t = BBox<point_t, 3>;
 using node_t = RTreeNode<bbox_t, 3>;
@@ -35,7 +34,21 @@ TEST(RTreeTest, insertTest) {
   std::cerr << testTree << "\n";
 }
 TEST(DiskRTreeTest, DefaultTest) { dtree_t testTree; }
-TEST(DiskRTreeTest, insertTest) {
+TEST(DiskRTreeTest, insertTest1) {
+  dtree_t testTree;
+  double p[2] = {5, 5};
+  for (size_t i = 0; i < 9; i++) {
+    std::cerr << i << "\n";
+    std::cerr << testTree << "\n";
+    ASSERT_TRUE(testTree.insert(point_t(p))) << "The insertion went wrong";
+  }
+  std::cerr << 9 << "\n";
+  std::cerr << testTree << "\n";
+  ASSERT_TRUE(testTree.insert(point_t(p))) << "The insertion went wrong";
+  std::cerr << 10 << "\n";
+  std::cerr << testTree << "\n";
+}
+TEST(DiskRTreeTest, insertTest2) {
   point_t a(ps[0]), b(ps[1]), c(ps[2]), d(ps[3]);
   dtree_t testTree;
   std::cerr << testTree << "\n";

@@ -10,6 +10,8 @@
 #include <utility>
 #include <vector>
 
+#define MAX_SIZE size_t(-1)
+
 namespace fs = std::filesystem;
 
 template <class node_t, size_t size>
@@ -162,17 +164,21 @@ struct DiskNode {
   }
   id_t id() { return selfId; }
   bool isLeaf() { return box.content.size(); }
+  size_t hasSons() {
+    for (size_t i = 0; i < M; i++) {
+      if (!sonsId[i]) return i;
+    }
+    return MAX_SIZE;
+  }
   bool isFull() {
     if (isLeaf()) {
       return box.isFull();
     }
-    for (auto& s : sonsId) {
-      if (!s) return false;
-    }
-    return true;
+    return hasSons() != MAX_SIZE;
   }
+
   coord_t min(size_t d) {
-    assert(sonsId[0]);
+    assert(hasSons() != MAX_SIZE);
     auto son0 = node_t::get(sonsId[0]);
     coord_t m = std::min(son0->box.corners[0][d], son0->box.corners[1][d]);
     coord_t curr = m;
@@ -186,7 +192,7 @@ struct DiskNode {
     return m;
   }
   coord_t max(size_t d) {
-    assert(sonsId[0]);
+    assert(hasSons() != MAX_SIZE);
     auto son0 = node_t::get(sonsId[0]);
     coord_t m = std::max(son0->box.corners[0][d], son0->box.corners[1][d]);
     coord_t curr = m;
@@ -201,6 +207,7 @@ struct DiskNode {
   }
   void resize() {
     const size_t d = box.corners[0].dim();
+    if (isLeaf()) return box.resize();
     coord_t a[d], b[d];
     for (size_t i = 0; i < d; i++) {
       a[i] = min(i);
@@ -212,15 +219,16 @@ struct DiskNode {
     assert(isFull());
     auto node = node_t::get(0);
     auto nbox = box.trySplit(p);
-    node->box = box;
+    node->box = nbox;
+    return node->selfId;
   }
   id_t split(id_t id) {
     assert(isFull());
-    auto node = node_t::get(0);
+    node_t* node = node_t::get(0);
     // dummy split algorithm
     for (size_t i = M / 2, j = 0; i < M; i++, j++) {
       node->sonsId[j] = sonsId[i];
-      node->sonsId[j]->parentId = node->selfId;
+      node_t::get(node->sonsId[j])->parentId = node->selfId;
       sonsId[i] = 0;
     }
     add(id);
@@ -245,32 +253,45 @@ struct DiskNode {
   }
 
   bool null() { return box.null(); }
-  // true if box has to be resized
-  bool insert(const point_t& p) {
+
+  // returns new id if the insert causes an split else returns null id(0)
+  id_t insert(const point_t& p) {
+    bool resizeNeeded = false;
+    id_t sId = 0;
     if (isLeaf()) {
       setDirty();
-
+      if (!isFull()) {
+        if (box.area(p) != box.area()) resizeNeeded = true;
+        add(p);
+      } else {
+        sId = split(p);
+      }
     } else {  // since is nonLeaf it has at least one child
       // get minimum Area enlargment bbox
       node_t* chosen = nullptr;
       for (auto sId : sonsId) {
         if (!sId) continue;
         auto son = node_t::get(sId);
-        if (!chosen || son->box.area(p) < chonsen->box.area(p)) {
+        if (!chosen || son->box.area(p) < chosen->box.area(p)) {
           chosen = son;
         }
       }
-      bool resizeNeeded = false;
       // check if box needs to be resized
-      if (chonsen->box.area(p) != chosen->box.area()) resizeNeeded = true;
+      if (chosen->box.area(p) != chosen->box.area()) resizeNeeded = true;
       // resize after insertion
-      chosen->insert(p);
-      if (resizeNeeded) {
-        setDirty();
-        resize();
-      }
+      sId = chosen->insert(p);
     }
-    return resizeNeeded;
+    if (resizeNeeded) {
+      setDirty();
+      resize();
+    }
+    if (sId) {  // recursive split
+      if (isFull())
+        return split(sId);
+      else
+        add(sId);
+    }
+    return 0;
   }
 
   template <class os_t>
