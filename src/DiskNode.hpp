@@ -225,6 +225,7 @@ struct DiskNode {
     return m;
   }
   void resize() {
+    setDirty();
     const size_t d = box.corners[0].dim();
     if (isLeaf()) return box.resize();
     coord_t a[d], b[d];
@@ -238,6 +239,7 @@ struct DiskNode {
     assert(isFull());
     auto node = node_t::get(0);
     assert(node);
+    node->setDirty();
     node->box = box.trySplit(p);
     node->parentId = parentId;
     return node->selfId;
@@ -246,6 +248,7 @@ struct DiskNode {
     assert(isFull());
     node_t* node = node_t::get(0);
     assert(node);
+    node->setDirty();
     // dummy split algorithm
     for (size_t i = M / 2, j = 0; i < M; i++, j++) {
       node->sonsId[j] = sonsId[i];
@@ -261,15 +264,18 @@ struct DiskNode {
   }
   void add(id_t node) {
     assert(!isFull());
+    setDirty();
     for (size_t i = 0; i < M; i++) {
       if (!sonsId[i]) {
         sonsId[i] = node;
+        node_t::get(node)->parentId = selfId;
         return;
       }
     }
   }
   void add(point_t p) {
     assert(!box.isFull());
+    setDirty();
     box.tryInsert(p);
   }
 
@@ -280,7 +286,6 @@ struct DiskNode {
     bool resizeNeeded = false;
     id_t sId = 0;
     if (isLeaf()) {
-      setDirty();
       if (!isFull()) {
         if (box.area(p) != box.area()) resizeNeeded = true;
         add(p);
@@ -303,7 +308,6 @@ struct DiskNode {
       sId = chosen->insert(p);
     }
     if (resizeNeeded) {
-      setDirty();
       resize();
     }
     if (sId) {  // recursive split

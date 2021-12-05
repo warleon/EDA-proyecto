@@ -38,14 +38,6 @@ class DiskRTree {
      */
     return result;
   }
-  /*
-  template <class os_t>
-  friend os_t& operator<<(os_t& os, DiskRTree<node_t>& n) {
-    auto root = node_t::get(n.rootId);
-    assert(root);
-    return os << *root;
-  }
-  */
 
  public:
   // Json format output
