@@ -26,12 +26,20 @@ struct DiskNode {
   id_t selfId;
   std::array<id_t, M> sonsId = {0};
 
-  void setDirty() { node_t::pool.dirty.set(node_t::pool.idToPos[selfId]); }
+  void setDirty() {
+    assert(selfId);
+    node_t::pool.dirty.set(node_t::pool.idToPos[selfId]);
+  }
+  void setUsed() {
+    assert(selfId);
+    node_t::pool.clock.set(node_t::pool.idToPos[selfId]);
+  }
 
   static node_t* get(size_t id) {
     auto node = node_t::pool.get(id);
     assert(node);
     node->selfId = id;
+    node->setUsed();
     return node;
   }
   ~DiskNode() {}
@@ -40,7 +48,7 @@ struct DiskNode {
     parentId = 0;
   }
   id_t id() { return selfId; }
-  bool isLeaf() { return box.content.size(); }
+  bool isLeaf() { return box.content.size() /* && hasSons() == MAX_SIZE*/; }
   size_t hasSons() {
     for (size_t i = 0; i < M; i++) {
       if (!sonsId[i]) return i;
@@ -84,8 +92,8 @@ struct DiskNode {
   }
   void resize() {
     setDirty();
-    const size_t d = box.corners[0].dim();
     if (isLeaf()) return box.resize();
+    const size_t d = box.corners[0].dim();
     coord_t a[d], b[d];
     for (size_t i = 0; i < d; i++) {
       a[i] = min(i);
@@ -153,28 +161,27 @@ struct DiskNode {
     } else {  // since is nonLeaf it has at least one child
       // get minimum Area enlargment bbox
       node_t* chosen = nullptr;
-      for (auto sId : sonsId) {
-        if (!sId) continue;
-        auto son = node_t::get(sId);
+      for (auto sonId : sonsId) {
+        if (!sonId) continue;
+        auto son = node_t::get(sonId);
         if (!chosen || son->box.area(p) < chosen->box.area(p)) {
           chosen = son;
         }
       }
-      // check if box needs to be resized
       if (chosen->box.area(p) != chosen->box.area()) resizeNeeded = true;
-      // resize after insertion
       sId = chosen->insert(p);
     }
+    // resize after insertion
     if (resizeNeeded) {
       resize();
     }
-    if (sId) {  // recursive split
-      if (isFull())
-        return split(sId);
-      else
-        add(sId);
+    if (sId) {              // if son node has splited
+      if (isFull())         // and current node is full
+        return split(sId);  // split current node and comunicate to parent node
+      else                  // if not full
+        add(sId);           // just add the new node
     }
-    return 0;
+    return 0;  // comunicate to parent that current node has not been splited
   }
 
  public:

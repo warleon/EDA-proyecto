@@ -31,13 +31,11 @@ int main(int argc, char** argv) {
   assert(argc >= 2);
   std::string configFilePath = argv[1];
   std::ifstream configFile(configFilePath);
-  // EntryManager manager;
 
   json config;
   configFile >> config;
   size_t max = config["max"];
 
-  // std::cout << config.dump() << std::endl;
   const size_t dim = config["coordNames"].size();
 
   ld coords[dim];
@@ -50,8 +48,6 @@ int main(int argc, char** argv) {
     CSVReader reader(config["files"][i], ',');
     while (reader.ok() && count++ < max) {
       reader.next();
-      // entryId =
-      // manager.add(config["files"][i], reader.fileOffset(), reader.size());
 
       for (size_t j = 0; j < dim; j++) {
         coords[j] = stold(reader(config["coordNames"][j]));
@@ -61,6 +57,6 @@ int main(int argc, char** argv) {
       tree.insert(temp);
     }
   }
-  // std::cout << tree;
+  std::cout << tree;
   return 0;
 }
