@@ -91,6 +91,26 @@ struct BBox {
     }
     return r;
   }
+  //overlap
+  bool overlap(bbox_t b){
+    assert(!b.null() && !null());
+    const size_t d = corners[0].dim();
+    bool overlap_ = false;
+    for (size_t i = 0; i < d; i++)
+    {
+      coord_t ma = min(corners[0][d], corners[1][d]);
+      coord_t Ma = max(corners[0][d], corners[1][d]);
+      coord_t mb = min(b.corners[0][d], b.corners[1][d]);
+      coord_t Mb = max(b.corners[0][d], b.corners[1][d]);
+      if(
+        ((mb <= ma && ma <= Mb)||(mb <= Ma && Ma <= Mb)) || 
+        ((ma <= mb && mb <= Ma)||(ma <= Mb && Mb <= Ma)) )
+      {
+        overlap = true;
+      }
+    }
+    return overlap_;
+  }
   // dummy way
   bbox_t trySplit(point_t p) {
     bbox_t nBox;
