@@ -51,7 +51,6 @@ struct BBox {
   }
 
   bool isFull() {
-    assert(maxSize != 0);
     if (!content.size()) return false;
     for (size_t i = 0; i < maxSize; i++) {
       if (content[i].null()) {
@@ -109,8 +108,8 @@ struct BBox {
 
   coord_t area() {
     coord_t r = 1;
-    std::size_t n = corners[0].dim();
-    for (std::size_t i = 0; i < n; i++) {
+    size_t n = corners[0].dim();
+    for (size_t i = 0; i < n; i++) {
       auto min = std::min(corners[0][i], corners[1][i]);
       auto max = std::max(corners[0][i], corners[1][i]);
       r *= max - min;  // diference always positive
@@ -119,8 +118,8 @@ struct BBox {
   }
   coord_t area(point_t p) {
     coord_t r = 1;
-    std::size_t n = corners[0].dim();
-    for (std::size_t i = 0; i < n; i++) {
+    size_t n = corners[0].dim();
+    for (size_t i = 0; i < n; i++) {
       auto min = std::min(std::min(corners[0][i], corners[1][i]), p[i]);
       auto max = std::max(std::max(corners[0][i], corners[1][i]), p[i]);
       r *= max - min;  // diference always positive

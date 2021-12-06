@@ -35,7 +35,11 @@ struct Point {
   }
 
   ~Point() = default;
-  coord_t operator[](std::size_t i) { return coords[i]; }
+  coord_t operator[](size_t i) {
+    assert(i < N);
+    return coords[i];
+  }
+  /*
   point_t operator=(point_t p) {
     null_ = p.null_;
     data = p.data;
@@ -44,6 +48,7 @@ struct Point {
     }
     return *this;
   }
+  */
 
   bool null() { return null_; }
   bool between(point_t a, point_t b) {

@@ -48,10 +48,11 @@ struct DiskNode {
     parentId = 0;
   }
   id_t id() { return selfId; }
-  bool isLeaf() { return box.content.size() /* && hasSons() == MAX_SIZE*/; }
+  bool isLeaf() { return box.content.size() /*&& hasSons() == MAX_SIZE*/; }
+  // returns the position of the first non null son or MAX_SIZE if there isn't
   size_t hasSons() {
     for (size_t i = 0; i < M; i++) {
-      if (!sonsId[i]) return i;
+      if (sonsId[i]) return i;
     }
     return MAX_SIZE;
   }
@@ -59,7 +60,10 @@ struct DiskNode {
     if (isLeaf()) {
       return box.isFull();
     }
-    return hasSons() != MAX_SIZE;
+    for (size_t i = 0; i < M; i++) {
+      if (!sonsId[i]) return false;
+    }
+    return true;
   }
 
   coord_t min(size_t d) {
@@ -102,7 +106,7 @@ struct DiskNode {
     box.resize(point_t(a), point_t(b));
   }
   id_t split(point_t p) {
-    assert(isFull());
+    assert(isFull() && isLeaf());
     auto node = node_t::get(0);
     assert(node);
     node->setDirty();
@@ -111,7 +115,7 @@ struct DiskNode {
     return node->selfId;
   }
   id_t split(id_t id) {
-    assert(isFull());
+    assert(isFull() && !isLeaf());
     node_t* node = node_t::get(0);
     assert(node);
     node->setDirty();
@@ -129,7 +133,7 @@ struct DiskNode {
     return node->selfId;
   }
   void add(id_t node) {
-    assert(!isFull());
+    assert(!isFull() && !isLeaf());
     setDirty();
     for (size_t i = 0; i < M; i++) {
       if (!sonsId[i]) {
@@ -140,7 +144,7 @@ struct DiskNode {
     }
   }
   void add(point_t p) {
-    assert(!box.isFull());
+    assert(!isFull() && isLeaf());
     setDirty();
     box.tryInsert(p);
   }
@@ -156,7 +160,7 @@ struct DiskNode {
         if (box.area(p) != box.area()) resizeNeeded = true;
         add(p);
       } else {
-        sId = split(p);
+        return split(p);
       }
     } else {  // since is nonLeaf it has at least one child
       // get minimum Area enlargment bbox
@@ -168,6 +172,7 @@ struct DiskNode {
           chosen = son;
         }
       }
+      assert(chosen);
       if (chosen->box.area(p) != chosen->box.area()) resizeNeeded = true;
       sId = chosen->insert(p);
     }

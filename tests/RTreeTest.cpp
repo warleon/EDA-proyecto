@@ -36,15 +36,17 @@ TEST(RTreeTest, insertTest) {
 TEST(DiskRTreeTest, DefaultTest) { dtree_t testTree; }
 TEST(DiskRTreeTest, insertTest1) {
   dtree_t testTree;
-  double p[2] = {5, 5};
+  double arr[2] = {5, 5};
+  point_t p(arr);
+  std::cerr << "point to insert:" << p << "\n";
   for (size_t i = 0; i < 9; i++) {
     std::cerr << i << "\n";
     std::cerr << testTree << "\n";
-    (testTree.insert(point_t(p)));
+    (testTree.insert(p));
   }
   std::cerr << 9 << "\n";
   std::cerr << testTree << "\n";
-  (testTree.insert(point_t(p)));
+  (testTree.insert(p));
   std::cerr << 10 << "\n";
   std::cerr << testTree << "\n";
 }
