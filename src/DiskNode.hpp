@@ -76,7 +76,7 @@ struct DiskNode {
       if (!sonsId[i]) continue;
       auto son = node_t::get(sonsId[i]);
       curr = std::min(son->box.corners[0][d], son->box.corners[1][d]);
-      if (curr > m) m = curr;
+      if (curr < m) m = curr;
     }
     return m;
   }
@@ -99,11 +99,13 @@ struct DiskNode {
     if (isLeaf()) return box.resize();
     const size_t d = box.corners[0].dim();
     coord_t a[d], b[d];
+    // serach min and max points between sons
     for (size_t i = 0; i < d; i++) {
       a[i] = min(i);
       b[i] = max(i);
     }
-    box.resize(point_t(a), point_t(b));
+    point_t pa(a), pb(b);
+    box.resize(pa, pb);
   }
   id_t split(point_t p) {
     assert(isFull() && isLeaf());

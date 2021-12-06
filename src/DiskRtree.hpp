@@ -34,6 +34,7 @@ class DiskRTree {
       // set the sibling nodes to be the new root sons
       nRoot->add(sRootId);
       nRoot->add(root->selfId);
+      nRoot->resize();
     }
     return true;
   }
