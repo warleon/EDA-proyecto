@@ -2,7 +2,7 @@
 
 #include <BBox.hpp>
 #include <DiskNode.hpp>
-#include <DiskRTree.hpp>
+#include <DiskRtree.hpp>
 #include <Point.hpp>
 #include <RTree.hpp>
 #include <RTreeNode.hpp>

@@ -31,6 +31,14 @@ TEST(BBoxTest, PointyBoxTest) {
   bbox_t box(a, a);
   ASSERT_TRUE(box.covers(a));
 }
+// falta corregir
+// TEST(BBoxTest, OverlapTest) {
+//   point_t a(ps[0]), b(ps[1]), c(ps[2]), d(ps[3]);
+//   bbox_t boxA(a, b);
+//   bbox_t boxB(c, d);
+//   EXPECT_TRUE(boxA.overlap(boxB));
+//   EXPECT_FALSE(boxA.overlap(boxA,boxB));
+// }
 TEST(BBoxTest, PrintTest) {
   point_t a(ps[0]), b(ps[1]), c(ps[2]), d(ps[3]);
   bbox_t box(a, b), box2;
