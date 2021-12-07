@@ -13,12 +13,11 @@ class SVGRenderer {
   SVGRenderer(T& o) : object(o) {}
   ~SVGRenderer() {}
   void operator()(fs::path path, size_t width, size_t height) {
-    std::string svg = toSVG(object, 0, 0, width, height);
     std::ofstream os(path);
     assert(os.is_open());
     os << "<svg width =\"" << width << "\" height=\"" << height
        << "\" xmlns=\"http://www.w3.org/2000/svg\" version = \"1.1\" >\n ";
-    os << svg;
+    toSVG(os, object, 0, 0, width, height);
     os << "</svg>";
 
     os.close();

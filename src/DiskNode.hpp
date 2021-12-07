@@ -246,10 +246,11 @@ struct DiskNode {
   }
 
   NLOHMANN_DEFINE_TYPE_INTRUSIVE(node_t, box, parentId, selfId, sonsId)
-  friend std::string toSVG(node_t& object, size_t x, size_t y, size_t width,
-                           size_t height) {
+  template <class os_t>
+  friend void toSVG(os_t& os, node_t& object, size_t x, size_t y, size_t width,
+                    size_t height) {
     // draw box
-    std::string svg = toSVG(object.box, x, y, width, height);
+    toSVG(os, object.box, x, y, width, height);
     coord_t min0 = object.box.min(0), min1 = object.box.min(1);
     coord_t max0 = object.box.max(0), max1 = object.box.max(1);
     for (auto& sId : object.sonsId) {
@@ -262,8 +263,7 @@ struct DiskNode {
       size_t rY = y + ((smin1 - min1) / (max1 - min1)) * height;
       size_t rW = ((smax0 - smin0) / (max0 - min0)) * width;
       size_t rH = ((smax1 - smin1) / (max1 - min1)) * height;
-      svg += toSVG(son, rX, rY, rW, rH);
+      toSVG(os, son, rX, rY, rW, rH);
     }
-    return svg;
   }
 };

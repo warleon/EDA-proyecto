@@ -17,8 +17,8 @@ using json = nlohmann::json;
 
 using ld = long double;
 using point_t = Point<std::vector<std::string>, ld, 2>;
-using bbox_t = BBox<point_t, 32>;
-using node_t = DiskNode<1000, bbox_t, 32>;
+using bbox_t = BBox<point_t, 10000>;
+using node_t = DiskNode<1000, bbox_t, 100>;
 using pool_t = typename node_t::pool_t;
 using rtree_t = DiskRTree<node_t>;
 

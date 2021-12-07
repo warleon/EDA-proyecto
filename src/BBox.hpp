@@ -217,14 +217,13 @@ struct BBox {
   }
 
   NLOHMANN_DEFINE_TYPE_INTRUSIVE(bbox_t, corners, content)
-  friend std::string toSVG(bbox_t& object, size_t x, size_t y, size_t width,
-                           size_t height) {
+  template <class os_t>
+  friend void toSVG(os_t& os, bbox_t& object, size_t x, size_t y, size_t width,
+                    size_t height) {
     // draw rectangle
-    std::string svg =
-        "<rect x=\"" + std::to_string(x) + "\" y=\"" + std::to_string(y) +
-        "\" width=\"" + std::to_string(width) + "\" height=\"" +
-        std::to_string(height) +
-        "\" fill=\"none\" stroke-width=\"1\" stroke=\"green\"/>\n";
+    os << "<rect x=\"" << x << "\" y=\"" << y << "\" width=\"" << width
+       << "\" height=\"" << height
+       << "\" fill=\"none\" stroke-width=\"1\" stroke=\"green\"/>\n";
     for (auto& p : object.content) {
       if (p.null()) continue;
       // draw points relative to the box dimensions
@@ -232,10 +231,9 @@ struct BBox {
            max1 = object.max(1);
       size_t cx = x + ((p[0] - min0) / (max0 - min0)) * width;
       size_t cy = y + ((p[1] - min1) / (max1 - min1)) * height;
-      svg += "<circle cx=\"" + std::to_string(cx) + "\" cy=\"" +
-             std::to_string(cy) + R"(" r="1" stroke-width="5" stroke="red"/>)" +
-             "\n";
+      os << "<circle cx=\"" << cx << +"\" cy=\"" << cy
+         << R"(" r="1" stroke-width="5" stroke="red"/>)"
+         << "\n";
     }
-    return svg;
   }
 };
