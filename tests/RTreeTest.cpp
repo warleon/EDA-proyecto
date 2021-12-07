@@ -6,6 +6,7 @@
 #include <Point.hpp>
 #include <RTree.hpp>
 #include <RTreeNode.hpp>
+#include <SVGRenderer.hpp>
 #include <iostream>
 
 using point_t = Point<int, double, 2>;
@@ -63,4 +64,14 @@ TEST(DiskRTreeTest, insertTest2) {
   std::cerr << testTree << "\n";
   testTree.insert(d);
   std::cerr << testTree << "\n";
+}
+TEST(DiskRTreeTest, SVGRenderTest) {
+  point_t a(ps[0]), b(ps[1]), c(ps[2]), d(ps[3]);
+  dtree_t testTree;
+  SVGRenderer<dtree_t> render(testTree);
+  testTree.insert(a);
+  testTree.insert(b);
+  testTree.insert(c);
+  testTree.insert(d);
+  render("./RTree.html", 100, 100);
 }

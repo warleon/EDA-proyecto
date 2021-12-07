@@ -74,20 +74,38 @@ struct BBox {
     return false;
   }
   coord_t min(size_t d) {
-    assert(content.size());
-    coord_t r = content[0][d];
-    for (size_t i = 0; i < maxSize; i++) {
-      if (content[i].null()) continue;
-      if (content[i][d] < r) r = content[i][d];
+    coord_t r;
+    if (content.size()) {
+      r = content[0][d];
+      for (size_t i = 0; i < maxSize; i++) {
+        if (content[i].null()) continue;
+        if (content[i][d] < r) r = content[i][d];
+      }
+    } else {
+      assert(!null());
+      r = corners[0][d];
+      for (size_t i = 0; i < 2; i++) {
+        if (corners[i].null()) continue;
+        if (corners[i][d] < r) r = corners[i][d];
+      }
     }
     return r;
   }
   coord_t max(size_t d) {
-    assert(content.size());
-    coord_t r = content[0][d];
-    for (size_t i = 0; i < maxSize; i++) {
-      if (content[i].null()) continue;
-      if (content[i][d] > r) r = content[i][d];
+    coord_t r;
+    if (content.size()) {
+      r = content[0][d];
+      for (size_t i = 0; i < maxSize; i++) {
+        if (content[i].null()) continue;
+        if (content[i][d] > r) r = content[i][d];
+      }
+    } else {
+      assert(!null());
+      r = corners[0][d];
+      for (size_t i = 0; i < 2; i++) {
+        if (corners[i].null()) continue;
+        if (corners[i][d] > r) r = corners[i][d];
+      }
     }
     return r;
   }
@@ -199,4 +217,25 @@ struct BBox {
   }
 
   NLOHMANN_DEFINE_TYPE_INTRUSIVE(bbox_t, corners, content)
+  friend std::string toSVG(bbox_t& object, size_t x, size_t y, size_t width,
+                           size_t height) {
+    // draw rectangle
+    std::string svg =
+        "<rect x=\"" + std::to_string(x) + "\" y=\"" + std::to_string(y) +
+        "\" width=\"" + std::to_string(width) + "\" height=\"" +
+        std::to_string(height) +
+        "\" fill=\"none\" stroke-width=\"1\" stroke=\"green\"/>\n";
+    for (auto& p : object.content) {
+      if (p.null()) continue;
+      // draw points relative to the box dimensions
+      auto min0 = object.min(0), min1 = object.min(1), max0 = object.max(0),
+           max1 = object.max(1);
+      size_t cx = x + ((p[0] - min0) / (max0 - min0)) * width;
+      size_t cy = y + ((p[1] - min1) / (max1 - min1)) * height;
+      svg += "<circle cx=\"" + std::to_string(cx) + "\" cy=\"" +
+             std::to_string(cy) + R"(" r="1" stroke-width="5" stroke="red"/>)" +
+             "\n";
+    }
+    return svg;
+  }
 };

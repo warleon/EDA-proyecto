@@ -34,7 +34,7 @@ struct Point {
     }
   }
 
-  ~Point() = default;
+  ~Point() {}
   coord_t operator[](size_t i) {
     assert(i < N);
     return coords[i];
