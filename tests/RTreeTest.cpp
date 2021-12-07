@@ -73,5 +73,5 @@ TEST(DiskRTreeTest, SVGRenderTest) {
   testTree.insert(b);
   testTree.insert(c);
   testTree.insert(d);
-  render("./RTree.html", 100, 100);
+  render("./RTree.svg", 100, 100);
 }

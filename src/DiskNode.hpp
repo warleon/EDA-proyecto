@@ -122,8 +122,8 @@ struct DiskNode {
     node_t* node = node_t::get(0);
     assert(node);
     // begin split algorithm
-    size_t nodesThere = 0;
-    size_t nodesHere = 0;
+    // size_t nodesThere = 0;
+    // size_t nodesHere = 0;
     auto pivots = box.corners;
     node_t* son = nullptr;
     size_t i = 0;
@@ -133,29 +133,34 @@ struct DiskNode {
       son = node_t::get(sonsId[i]);
       assert(son);
       if (son->box.manDist(pivots[0]) <= son->box.manDist(pivots[1])) {
-        nodesHere++;
+        // nodesHere++;
         continue;
       }
-      nodesThere++;
+      // nodesThere++;
       // else move it to node
       node->add(sonsId[i]);
       sonsId[i] = 0;
 
-      if (nodesThere >= M / 2 || nodesHere >= M / 2) break;
+      // if (nodesThere >= (M / 2) || nodesHere >= (M / 2)) break;
     }
     // if half the nodes remain here move the rest node
-    if (nodesHere >= M / 2) {
+    /*
+    if (nodesHere >= (M / 2)) {
       for (; i < M; i++) {
         node->add(sonsId[i]);
         sonsId[i] = 0;
       }
     }  // else half the nodes went to node so do nothing
+    */
 
     // insert the overflow point to the closest pivot
     son = node_t::get(id);
     assert(son);
     if (son->box.manDist(pivots[0]) < son->box.manDist(pivots[1])) {
-      add(son->selfId);
+      if (isFull())
+        node->add(son->selfId);
+      else
+        add(son->selfId);
     } else {
       node->add(son->selfId);
     }

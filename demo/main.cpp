@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
     }
   }
   std::cout << tree << "\n";
-  render("./RTree.html", 1000, 1000);
+  render("./RTree.svg", 100000, 100000);
 
   return 0;
 }

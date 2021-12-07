@@ -16,10 +16,10 @@ class SVGRenderer {
     std::string svg = toSVG(object, 0, 0, width, height);
     std::ofstream os(path);
     assert(os.is_open());
-    os << "<!DOCTYPE html> <html><body> <svg width =\"" << width
-       << "\" height=\"" << height << "\">\n";
+    os << "<svg width =\"" << width << "\" height=\"" << height
+       << "\" xmlns=\"http://www.w3.org/2000/svg\" version = \"1.1\" >\n ";
     os << svg;
-    os << "</svg></body></html>";
+    os << "</svg>";
 
     os.close();
   }
