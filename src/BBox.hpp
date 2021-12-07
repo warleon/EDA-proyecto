@@ -91,18 +91,45 @@ struct BBox {
     }
     return r;
   }
-  // dummy way
+  // with the corners as pivots assign each point to the closest pivot until
+  // there is half the points in a group
   bbox_t trySplit(point_t p) {
     bbox_t nBox;
     if (!isFull()) {
       assert(tryInsert(p));
       return nBox;
     };
-    for (size_t i = maxSize / 2; i < maxSize; i++) {
+    size_t pointsThere = 0;
+    size_t pointsHere = 0;
+    auto pivots = corners;
+    size_t i = 0;
+    // repart the points between nBox and this->box
+    for (; i < maxSize; i++) {
+      // if closest to 1st pivot point remains in this box
+      if (content[i].manDist(pivots[0]) <= content[i].manDist(pivots[1])) {
+        pointsHere++;
+        continue;
+      }
+      pointsThere++;
+      // else move it to nBox
       assert(nBox.tryInsert(content[i]));
       content[i] = point_t();
+
+      if (pointsThere >= maxSize / 2 || pointsHere >= maxSize / 2) break;
     }
-    assert(tryInsert(p));
+    // if half the points remain here move the rest to nBox
+    if (pointsHere > maxSize / 2) {
+      for (; i < maxSize; i++) {
+        assert(nBox.tryInsert(content[i]));
+        content[i] = point_t();
+      }
+    }  // else half the points went to nBox so do nothing
+    // insert the overflow point to the closest pivot
+    if (p.manDist(pivots[0]) < p.manDist(pivots[1])) {
+      assert(tryInsert(p));
+    } else {
+      assert(nBox.tryInsert(p));
+    }
     return nBox;
   }
 
@@ -125,6 +152,14 @@ struct BBox {
       r *= max - min;  // diference always positive
     }
     return r;
+  }
+  // return maximun manhatan distance between p and any corner of box
+  coord_t manDist(point_t p) {
+    coord_t dist = 0;
+    for (size_t i = 0; i < p.dim(); i++) {
+      dist += std::max(p.distAlong(corners[0], i), p.distAlong(corners[1], i));
+    }
+    return dist;
   }
 
   size_t size() { return maxSize; }

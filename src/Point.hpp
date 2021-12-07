@@ -63,6 +63,13 @@ struct Point {
     assert(!x.null() && !null() && d < N);
     return std::abs(coords[d] - x.coords[d]);
   }
+  coord_t manDist(point_t x) {
+    coord_t dist = 0;
+    for (size_t i = 0; i < N; i++) {
+      dist += distAlong(x, i);
+    }
+    return dist;
+  }
 
  public:
   // Json format output
