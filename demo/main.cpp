@@ -17,8 +17,8 @@ using json = nlohmann::json;
 
 using ld = long double;
 using point_t = Point<std::vector<std::string>, ld, 2>;
-using bbox_t = BBox<point_t, 10000>;
-using node_t = DiskNode<1000, bbox_t, 100>;
+using bbox_t = BBox<point_t, 1000>;
+using node_t = DiskNode<10000, bbox_t, 100>;
 using pool_t = typename node_t::pool_t;
 using rtree_t = DiskRTree<node_t>;
 
@@ -42,28 +42,43 @@ int main(int argc, char** argv) {
   ld coords[dim];
   rtree_t tree;
   size_t count = 0;
+  size_t countIgnore = 0;
   std::vector<std::string> data;
   SVGRenderer<rtree_t> render(tree);
 
   for (size_t i = 0; i < config["files"].size(); i++) {
     // std::cout << config["files"][i] << std::endl;
     CSVReader reader(config["files"][i], ',');
-    while (reader.ok() && count++ < max) {
-      reader.next();
-
-      for (size_t j = 0; j < dim; j++) {
-        coords[j] = stold(reader(config["coordNames"][j]));
+    while (reader.ok() && count < max) {
+      try {
+        reader.next();
+        for (size_t j = 0; j < dim; j++) {
+          coords[j] = stold(reader(config["coordNames"][j]));
+        }
+      } catch (...) {
+        continue;
+        countIgnore++;
+      }
+      if (!coords[0] || !coords[1]) {
+        countIgnore++;
+        continue;
+      }
+      count++;
+      if (count % 100000 == 0) {
+        std::cout << count << " points inserted\n";
+        std::cout << countIgnore << " points ignored\n";
       }
       data = reader.currentLine;
       point_t temp(coords, data);
-      if (count % (max / 5) == 0) {
-        std::cout << temp << "\n";
-      }
       tree.insert(temp);
     }
   }
   std::cout << tree << "\n";
-  render("./RTree.svg", 100000, 100000);
+  std::cout << count << " points inserted in total\n";
+  std::cout << countIgnore << " points ignored in total\n";
+  if (config["render"]) {
+    render("./RTree.svg", 100000, 100000);
+  }
 
   return 0;
 }

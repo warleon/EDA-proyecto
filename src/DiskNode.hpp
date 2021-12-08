@@ -162,7 +162,10 @@ struct DiskNode {
       else
         add(son->selfId);
     } else {
-      node->add(son->selfId);
+      if (node->isFull())
+        add(son->selfId);
+      else
+        node->add(son->selfId);
     }
     // end of split algorithm
     resize();

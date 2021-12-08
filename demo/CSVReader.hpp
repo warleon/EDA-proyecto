@@ -48,7 +48,7 @@ class CSVReader {
     currentLine = split(line, sep);
     currentLineSize = line.size();
   }
-  bool ok() { return file.good(); }
+  bool ok() { return file.good() && !file.eof(); }
   std::string operator()(const std::string& index) {
     return currentLine[nameMap[index]];
   }
