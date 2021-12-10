@@ -1,24 +1,37 @@
 #pragma once
 
 #include <fstream>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+#define linesToReset 1000000
 class CSVReader {
   std::unordered_map<std::string, size_t> nameMap;
   std::ifstream file;
   char sep;
   size_t currentLineSize;
+  std::string fileName;
+  size_t columns;
+
+  void refresh() {
+    auto offset = fileOffset();
+    file.close();
+    file.open(fileName);
+    assert(file.is_open());
+    file.seekg(offset);
+  }
 
  public:
   std::vector<std::string> currentLine;
   using iterator = std::vector<std::string>::iterator;
-  CSVReader(std::string filename, char sep_) : sep(sep_) {
+  CSVReader(std::string filename, char sep_) : sep(sep_), fileName(filename) {
     file.open(filename);
-    next();
+    next(true);
     // load name index
-    for (size_t i = 0; i < currentLine.size(); ++i) {
+    columns = currentLine.size();
+    for (size_t i = 0; i < currentLineSize; ++i) {
       nameMap[currentLine[i]] = i;
     }
   }
@@ -42,11 +55,20 @@ class CSVReader {
     return result;
   }
 
-  void next() {
-    std::string line;
+  bool next(bool head = false) {
+    static std::string line;
+
     std::getline(file, line);
+
     currentLine = split(line, sep);
-    currentLineSize = line.size();
+    currentLineSize = currentLine.size();
+    if (!head && columns > currentLineSize) {
+      // std::cout << "in Line: " << line << "\n";
+      // std::cout << "parse as: " << nlohmann::json(currentLine) << "\n";
+      // std::cout << columns << ">" << currentLineSize << "\n";
+      return false;
+    }
+    return true;
   }
   bool ok() { return file.good() && !file.eof(); }
   std::string operator()(const std::string& index) {

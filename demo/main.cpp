@@ -18,7 +18,7 @@ using json = nlohmann::json;
 using ld = long double;
 using point_t = Point<std::vector<std::string>, ld, 2>;
 using bbox_t = BBox<point_t, 1000>;
-using node_t = DiskNode<10000, bbox_t, 100>;
+using node_t = DiskNode<1000, bbox_t, 100>;
 using pool_t = typename node_t::pool_t;
 using rtree_t = DiskRTree<node_t>;
 
@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
     CSVReader reader(config["files"][i], ',');
     while (reader.ok() && count < max) {
       try {
-        reader.next();
+        if (!reader.next()) continue;
         for (size_t j = 0; j < dim; j++) {
           coords[j] = stold(reader(config["coordNames"][j]));
         }
