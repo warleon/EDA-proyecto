@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 #include <sstream>
 #include <string>
+#include <vector>
 using json = nlohmann::json;
 
 #define MAX_SIZE size_t(-1)
@@ -17,6 +18,7 @@ struct DiskNode {
   using pool_t = Pool<node_t, pool_size>;
   using id_t = typename pool_t::id_t;
   using pos_t = typename pool_t::pos_t;
+  using pointSet_t = std::vector<point_t>;
 
   friend pool_t;
 
@@ -145,8 +147,6 @@ struct DiskNode {
     node_t* node = node_t::get(0);
     assert(node);
     // begin split algorithm
-    size_t nodesThere = 0;
-    size_t nodesHere = 0;
     const auto& pivots = box.corners;
     node_t* son = nullptr;
 
@@ -157,40 +157,20 @@ struct DiskNode {
       assert(son);
       assert(!son->null());
       if (son->box.manDist(pivots[0]) < son->box.manDist(pivots[1])) {
-        nodesHere++;
         continue;
       }
-      nodesThere++;
       // else move it to node
       node->add(sonsId[i]);
       sonsId[i] = 0;
-
-      // if (nodesThere >= (M / 2) || nodesHere >= (M / 2)) break;
     }
     if (node->isFull() || isFull()) fixSplit(this, node);
-
-    // if half the nodes remain here move the rest node
-    /*
-    if (nodesHere >= (M / 2)) {
-      for (; i < M; i++) {
-        node->add(sonsId[i]);
-        sonsId[i] = 0;
-      }
-    }  // else half the nodes went to node so do nothing
-    */
 
     // insert the overflow point to the closest pivot
     son = node_t::get(id);
     assert(son);
     if (son->box.manDist(pivots[0]) < son->box.manDist(pivots[1])) {
-      // if (isFull())
-      // node->add(son->selfId);
-      // else
       add(son->selfId);
     } else {
-      // if (node->isFull())
-      // add(son->selfId);
-      // else
       node->add(son->selfId);
     }
     // end of split algorithm
@@ -260,6 +240,26 @@ struct DiskNode {
     }
     resize();
     return 0;  // comunicate to parent that current node has not been splited
+  }
+
+  void getRegion(pointSet_t& result, bbox_t& region) {
+    if (isLeaf()) {
+      for (auto& p : box.content) {
+        if (p.null()) continue;
+        if (region.covers(p)) {
+          result.push_back(p);
+        }
+      }
+    } else {
+      for (auto& sId : sonsId) {
+        if (!sId) continue;
+        auto son = node_t::get(sId);
+        assert(son);
+        if (son->box.overlap(region)) {
+          son->getRegion(result, region);
+        }
+      }
+    }
   }
 
  public:

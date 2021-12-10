@@ -1,14 +1,17 @@
 #pragma once
 
 #include <string>
+
 template <class node_t>
 class DiskRTree {
+ public:
   using bbox_t = typename node_t::bbox_t;
   using point_t = typename bbox_t::point_t;
   using id_t = typename node_t::id_t;
-  using pointSet_t = std::vector<point_t>;
   using coord_t = typename point_t::coord_t;
+  using pointSet_t = typename node_t::pointSet_t;
 
+ private:
   id_t rootId;
 
  public:
@@ -39,17 +42,10 @@ class DiskRTree {
     }
     return true;
   }
-  pointSet_t getRegion(point_t a, point_t b) {
-    pointSet_t result;
+  void getRegion(pointSet_t& result, point_t a, point_t b) {
     bbox_t region(a, b);
-    // TODO
-    /*
-    visitar solo los nodos q intersectan la region
-
-    if(region.covers(currentPoint))
-      result.push_back(currentPoint);
-     */
-    return result;
+    auto root = node_t::get(rootId);
+    root->getRegion(result, region);
   }
 
  public:

@@ -18,7 +18,7 @@ using json = nlohmann::json;
 
 using ld = long double;
 using point_t = Point<std::vector<std::string>, ld, 2>;
-using bbox_t = BBox<point_t, 20>;
+using bbox_t = BBox<point_t, 3>;
 using node_t = DiskNode<1000, bbox_t, 32>;
 using pool_t = typename node_t::pool_t;
 using rtree_t = DiskRTree<node_t>;
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
             throw "coordenada con poca precision";
           coords[j] = stold(value);
         }
-        if (!between(coords[0], (ld)-74.0, (ld)-73.0))
+        if (!between(coords[0], (ld)-74.0, (ld)-73.75))
           throw "coordenada X fuera de rango";
         if (!between(coords[1], (ld)40.0, (ld)41.0))
           throw "coordenada Y fuera de rango";
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
   std::cout << count << " points inserted in total\n";
   std::cout << countIgnore << " points ignored in total\n";
   if (config["render"]) {
-    render("./RTree.svg", 10000, 10000);
+    render("./RTree.svg", 5000, 5000);
   }
 
   return 0;

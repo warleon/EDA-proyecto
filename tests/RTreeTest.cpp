@@ -16,6 +16,7 @@ using rtree_t = RTree<node_t>;
 using dnode_t = DiskNode<500, bbox_t, 3>;
 using pool_t = typename dnode_t::pool_t;
 using dtree_t = DiskRTree<dnode_t>;
+using pointSet_t = typename dtree_t::pointSet_t;
 
 double ps[][2] = {{0, 0}, {10, 10}, {5, 5}, {15, 15}};
 
@@ -74,4 +75,16 @@ TEST(DiskRTreeTest, SVGRenderTest) {
   testTree.insert(c);
   testTree.insert(d);
   render("./RTree.svg", 100, 100);
+}
+TEST(DiskRTreeTest, getRegionTest) {
+  point_t a(ps[0]), b(ps[1]), c(ps[2]), d(ps[3]);
+  dtree_t testTree;
+  pointSet_t result;
+
+  testTree.insert(a);
+  testTree.insert(b);
+  testTree.insert(c);
+  testTree.insert(d);
+  testTree.getRegion(result, a, d);
+  ASSERT_EQ(result.size(), 4);
 }

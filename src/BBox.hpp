@@ -104,20 +104,21 @@ struct BBox {
   }
   // overlap
   bool overlap(bbox_t b) {
-    assert(!b.null() && !null());
+    assert(!b.null());
+    assert(!null());
     const size_t d = corners[0].dim();
-    bool overlap_ = false;
+    size_t overlap_ = 0;
     for (size_t i = 0; i < d; i++) {
-      coord_t ma = min(corners[0][d], corners[1][d]);
-      coord_t Ma = max(corners[0][d], corners[1][d]);
-      coord_t mb = min(b.corners[0][d], b.corners[1][d]);
-      coord_t Mb = max(b.corners[0][d], b.corners[1][d]);
+      coord_t ma = std::min(corners[0][i], corners[1][i]);
+      coord_t Ma = std::max(corners[0][i], corners[1][i]);
+      coord_t mb = std::min(b.corners[0][i], b.corners[1][i]);
+      coord_t Mb = std::max(b.corners[0][i], b.corners[1][i]);
       if (((mb <= ma && ma <= Mb) || (mb <= Ma && Ma <= Mb)) ||
           ((ma <= mb && mb <= Ma) || (ma <= Mb && Mb <= Ma))) {
-        overlap = true;
+        overlap_++;
       }
     }
-    return overlap_;
+    return overlap_ == d;
   }
   // dummy split
   void fixSplit(bbox_t* a, bbox_t* b) {
@@ -145,18 +146,14 @@ struct BBox {
       assert(tryInsert(p));
       return nBox;
     };
-    // size_t pointsThere = 0;
-    // size_t pointsHere = 0;
     auto pivots = corners;
     size_t i = 0;
     // repart the points between nBox and this->box
     for (; i < maxSize; i++) {
       // if closest to 1st pivot point remains in this box
       if (content[i].manDist(pivots[0]) < content[i].manDist(pivots[1])) {
-        // pointsHere++;
         continue;
       }
-      // pointsThere++;
       // else move it to nBox
       assert(nBox.tryInsert(content[i]));
       content[i] = point_t();
@@ -164,14 +161,6 @@ struct BBox {
       // if (pointsThere >= maxSize / 2 || pointsHere >= maxSize / 2) break;
     }
     if (isFull() || nBox.isFull()) fixSplit(this, &nBox);
-    // if half the points remain here move the rest to nBox
-    /*
-    if (pointsHere > maxSize / 2) {
-      for (; i < maxSize; i++) {
-        assert(nBox.tryInsert(content[i]));
-        content[i] = point_t();
-      }
-    }*/  // else half the points went to nBox so do nothing
     // insert the overflow point to the closest pivot
     if (p.manDist(pivots[0]) < p.manDist(pivots[1])) {
       assert(tryInsert(p));
