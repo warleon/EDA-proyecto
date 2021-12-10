@@ -3,7 +3,7 @@ project(EdaProyect)
 
 # GoogleTest requires at least C++11
 set(CMAKE_CXX_STANDARD 17)
-set( CMAKE_CXX_FLAGS "-Wall -Werror -g -fsanitize=address -Dallocator_may_return_null=1" )
+set( CMAKE_CXX_FLAGS "-Wall -Werror -g -fsanitize=address" )
 
 include(FetchContent)
 FetchContent_Declare(
@@ -85,6 +85,6 @@ gtest_discover_tests(RTreeNode)
 gtest_discover_tests(Point)
 gtest_discover_tests(BBox)
 
-add_custom_command(TARGET Demo POST_BUILD
+add_custom_command(TARGET Demo PRE_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                        ${CMAKE_SOURCE_DIR}/config/ $<TARGET_FILE_DIR:Demo>)

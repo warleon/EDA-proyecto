@@ -4,6 +4,7 @@
 #include <Point.hpp>
 #include <SVGRenderer.hpp>
 #include <cassert>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
@@ -17,8 +18,8 @@ using json = nlohmann::json;
 
 using ld = long double;
 using point_t = Point<std::vector<std::string>, ld, 2>;
-using bbox_t = BBox<point_t, 1000>;
-using node_t = DiskNode<1000, bbox_t, 100>;
+using bbox_t = BBox<point_t, 32>;
+using node_t = DiskNode<1000, bbox_t, 10>;
 using pool_t = typename node_t::pool_t;
 using rtree_t = DiskRTree<node_t>;
 
@@ -55,11 +56,18 @@ int main(int argc, char** argv) {
         for (size_t j = 0; j < dim; j++) {
           coords[j] = stold(reader(config["coordNames"][j]));
         }
-      } catch (...) {
-        continue;
+      } catch (...) {  // ignore empty or bad formated coords
         countIgnore++;
+        continue;
       }
+      /*
       if (!coords[0] || !coords[1]) {
+        countIgnore++;
+        continue;
+      }
+      */
+      if (fmod(coords[0], 0e-14) == 0 ||
+          fmod(coords[1], 0e-14) == 0) {  // ignore 0 and low precision coords
         countIgnore++;
         continue;
       }
@@ -77,7 +85,7 @@ int main(int argc, char** argv) {
   std::cout << count << " points inserted in total\n";
   std::cout << countIgnore << " points ignored in total\n";
   if (config["render"]) {
-    render("./RTree.svg", 100000, 100000);
+    render("./RTree.svg", 1000, 1000);
   }
 
   return 0;

@@ -83,11 +83,7 @@ struct BBox {
       }
     } else {
       assert(!null());
-      r = corners[0][d];
-      for (size_t i = 0; i < 2; i++) {
-        if (corners[i].null()) continue;
-        if (corners[i][d] < r) r = corners[i][d];
-      }
+      r = std::min(corners[0][d], corners[1][d]);
     }
     return r;
   }
@@ -101,11 +97,7 @@ struct BBox {
       }
     } else {
       assert(!null());
-      r = corners[0][d];
-      for (size_t i = 0; i < 2; i++) {
-        if (corners[i].null()) continue;
-        if (corners[i][d] > r) r = corners[i][d];
-      }
+      r = std::max(corners[0][d], corners[1][d]);
     }
     return r;
   }
@@ -134,31 +126,34 @@ struct BBox {
       assert(tryInsert(p));
       return nBox;
     };
-    size_t pointsThere = 0;
-    size_t pointsHere = 0;
+    // size_t pointsThere = 0;
+    // size_t pointsHere = 0;
     auto pivots = corners;
     size_t i = 0;
     // repart the points between nBox and this->box
     for (; i < maxSize; i++) {
       // if closest to 1st pivot point remains in this box
-      if (content[i].manDist(pivots[0]) <= content[i].manDist(pivots[1])) {
-        pointsHere++;
+      if (content[i].manDist(pivots[0]) < content[i].manDist(pivots[1])) {
+        // pointsHere++;
         continue;
       }
-      pointsThere++;
+      // pointsThere++;
       // else move it to nBox
       assert(nBox.tryInsert(content[i]));
       content[i] = point_t();
 
-      if (pointsThere >= maxSize / 2 || pointsHere >= maxSize / 2) break;
+      // if (pointsThere >= maxSize / 2 || pointsHere >= maxSize / 2) break;
     }
+    assert(!isFull());
+    assert(!nBox.isFull());
     // if half the points remain here move the rest to nBox
+    /*
     if (pointsHere > maxSize / 2) {
       for (; i < maxSize; i++) {
         assert(nBox.tryInsert(content[i]));
         content[i] = point_t();
       }
-    }  // else half the points went to nBox so do nothing
+    }*/  // else half the points went to nBox so do nothing
     // insert the overflow point to the closest pivot
     if (p.manDist(pivots[0]) < p.manDist(pivots[1])) {
       assert(tryInsert(p));
@@ -188,8 +183,9 @@ struct BBox {
     }
     return r;
   }
-  // return maximun manhatan distance between p and any corner of box
+  // return manhatan distance between p and fartest point of box
   coord_t manDist(point_t p) {
+    assert(!null());
     coord_t dist = 0;
     for (size_t i = 0; i < p.dim(); i++) {
       dist += std::max(p.distAlong(corners[0], i), p.distAlong(corners[1], i));
@@ -224,15 +220,16 @@ struct BBox {
     os << "<rect x=\"" << x << "\" y=\"" << y << "\" width=\"" << width
        << "\" height=\"" << height
        << "\" fill=\"none\" stroke-width=\"1\" stroke=\"green\"/>\n";
+
+    auto min0 = object.min(0), min1 = object.min(1), max0 = object.max(0),
+         max1 = object.max(1);
     for (auto& p : object.content) {
       if (p.null()) continue;
       // draw points relative to the box dimensions
-      auto min0 = object.min(0), min1 = object.min(1), max0 = object.max(0),
-           max1 = object.max(1);
       size_t cx = x + ((p[0] - min0) / (max0 - min0)) * width;
       size_t cy = y + ((p[1] - min1) / (max1 - min1)) * height;
       os << "<circle cx=\"" << cx << +"\" cy=\"" << cy
-         << R"(" r="1" stroke-width="5" stroke="red"/>)"
+         << R"(" r="5" stroke-width="5" stroke="red"/>)"
          << "\n";
     }
   }

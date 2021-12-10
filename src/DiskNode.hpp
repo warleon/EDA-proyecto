@@ -60,6 +60,7 @@ struct DiskNode {
     if (isLeaf()) {
       return box.isFull();
     }
+
     for (size_t i = 0; i < M; i++) {
       if (!sonsId[i]) return false;
     }
@@ -108,7 +109,8 @@ struct DiskNode {
     box.resize(pa, pb);
   }
   id_t split(point_t p) {
-    assert(isFull() && isLeaf());
+    assert(isFull());
+    assert(isLeaf());
     auto node = node_t::get(0);
     assert(node);
     node->setDirty();
@@ -117,32 +119,56 @@ struct DiskNode {
     node->parentId = parentId;
     return node->selfId;
   }
+
+  // make a dummy split to set each node to have half the children
+  void fixSplit(node_t* a, node_t* b) {
+    assert(a->isFull() || b->isFull());
+    node_t* full = nullptr;
+    node_t* empty = nullptr;
+    if (a->isFull()) {
+      full = a;
+      empty = b;
+    } else {
+      full = b;
+      empty = a;
+    }
+
+    for (size_t i = 0; i < M / 2; i++) {
+      empty->sonsId[i] = full->sonsId[i];
+      full->sonsId[i] = 0;
+    }
+  }
+
   id_t split(id_t id) {
-    assert(isFull() && !isLeaf());
+    assert(isFull());
+    assert(!isLeaf());
     node_t* node = node_t::get(0);
     assert(node);
     // begin split algorithm
-    // size_t nodesThere = 0;
-    // size_t nodesHere = 0;
-    auto pivots = box.corners;
+    size_t nodesThere = 0;
+    size_t nodesHere = 0;
+    const auto& pivots = box.corners;
     node_t* son = nullptr;
-    size_t i = 0;
+
     // repart the nodes between node and *this
-    for (; i < M; i++) {
+    for (size_t i = 0; i < M; i++) {
       // if closest to 1st pivot point remains in *this
       son = node_t::get(sonsId[i]);
       assert(son);
-      if (son->box.manDist(pivots[0]) <= son->box.manDist(pivots[1])) {
-        // nodesHere++;
+      assert(!son->null());
+      if (son->box.manDist(pivots[0]) < son->box.manDist(pivots[1])) {
+        nodesHere++;
         continue;
       }
-      // nodesThere++;
+      nodesThere++;
       // else move it to node
       node->add(sonsId[i]);
       sonsId[i] = 0;
 
       // if (nodesThere >= (M / 2) || nodesHere >= (M / 2)) break;
     }
+    if (node->isFull() || isFull()) fixSplit(this, node);
+
     // if half the nodes remain here move the rest node
     /*
     if (nodesHere >= (M / 2)) {
@@ -157,15 +183,15 @@ struct DiskNode {
     son = node_t::get(id);
     assert(son);
     if (son->box.manDist(pivots[0]) < son->box.manDist(pivots[1])) {
-      if (isFull())
-        node->add(son->selfId);
-      else
-        add(son->selfId);
+      // if (isFull())
+      // node->add(son->selfId);
+      // else
+      add(son->selfId);
     } else {
-      if (node->isFull())
-        add(son->selfId);
-      else
-        node->add(son->selfId);
+      // if (node->isFull())
+      // add(son->selfId);
+      // else
+      node->add(son->selfId);
     }
     // end of split algorithm
     resize();
@@ -175,7 +201,8 @@ struct DiskNode {
     return node->selfId;
   }
   void add(id_t node) {
-    assert(!isFull() && !isLeaf());
+    assert(!isFull());
+    assert(!isLeaf());
     setDirty();
     for (size_t i = 0; i < M; i++) {
       if (!sonsId[i]) {
@@ -186,7 +213,8 @@ struct DiskNode {
     }
   }
   void add(point_t p) {
-    assert(!isFull() && isLeaf());
+    assert(!isFull());
+    assert(isLeaf());
     setDirty();
     box.tryInsert(p);
   }
@@ -195,11 +223,11 @@ struct DiskNode {
 
   // returns new id if the insert causes an split else returns null id(0)
   id_t insert(const point_t& p) {
-    bool resizeNeeded = false;
+    // bool resizeNeeded = false;
     id_t sId = 0;
     if (isLeaf()) {
       if (!isFull()) {
-        if (box.area(p) != box.area()) resizeNeeded = true;
+        // if (box.area(p) != box.area()) resizeNeeded = true;
         add(p);
       } else {
         return split(p);
@@ -215,19 +243,22 @@ struct DiskNode {
         }
       }
       assert(chosen);
-      if (chosen->box.area(p) != chosen->box.area()) resizeNeeded = true;
+      // if (chosen->box.area(p) != chosen->box.area()) resizeNeeded = true;
       sId = chosen->insert(p);
     }
     // resize after insertion
+    /*
     if (resizeNeeded) {
       resize();
     }
+    */
     if (sId) {              // if son node has splited
       if (isFull())         // and current node is full
         return split(sId);  // split current node and comunicate to parent node
       else                  // if not full
         add(sId);           // just add the new node
     }
+    resize();
     return 0;  // comunicate to parent that current node has not been splited
   }
 

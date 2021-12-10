@@ -1,32 +1,21 @@
 #pragma once
 
 #include <fstream>
-#include <nlohmann/json.hpp>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#define linesToReset 1000000
 class CSVReader {
   std::unordered_map<std::string, size_t> nameMap;
   std::ifstream file;
   char sep;
   size_t currentLineSize;
-  std::string fileName;
   size_t columns;
-
-  void refresh() {
-    auto offset = fileOffset();
-    file.close();
-    file.open(fileName);
-    assert(file.is_open());
-    file.seekg(offset);
-  }
 
  public:
   std::vector<std::string> currentLine;
   using iterator = std::vector<std::string>::iterator;
-  CSVReader(std::string filename, char sep_) : sep(sep_), fileName(filename) {
+  CSVReader(std::string filename, char sep_) : sep(sep_) {
     file.open(filename);
     next(true);
     // load name index
@@ -63,9 +52,6 @@ class CSVReader {
     currentLine = split(line, sep);
     currentLineSize = currentLine.size();
     if (!head && columns > currentLineSize) {
-      // std::cout << "in Line: " << line << "\n";
-      // std::cout << "parse as: " << nlohmann::json(currentLine) << "\n";
-      // std::cout << columns << ">" << currentLineSize << "\n";
       return false;
     }
     return true;
