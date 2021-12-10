@@ -62,6 +62,7 @@ struct BBox {
   // tries to insert p in content but fails if is full
   bool tryInsert(point_t p) {
     assert(maxSize != 0);
+
     if (!content.size()) content.resize(maxSize);
     for (size_t i = 0; i < maxSize; i++) {
       if (content[i].null()) {
@@ -118,8 +119,26 @@ struct BBox {
     }
     return overlap_;
   }
+  // dummy split
+  void fixSplit(bbox_t* a, bbox_t* b) {
+    assert(a->isFull() || b->isFull());
+    bbox_t* full;
+    bbox_t* empty;
+    if (a->isFull()) {
+      full = a;
+      empty = b;
+    } else {
+      full = b;
+      empty = a;
+    }
+    auto M = full->content.size();
+    for (size_t i = 0; i < M / 2; i++) {
+      empty->content[i] = full->content[i];
+      full->content[i] = point_t();
+    }
+  }
+
   // with the corners as pivots assign each point to the closest pivot until
-  // there is half the points in a group
   bbox_t trySplit(point_t p) {
     bbox_t nBox;
     if (!isFull()) {
@@ -144,8 +163,7 @@ struct BBox {
 
       // if (pointsThere >= maxSize / 2 || pointsHere >= maxSize / 2) break;
     }
-    assert(!isFull());
-    assert(!nBox.isFull());
+    if (isFull() || nBox.isFull()) fixSplit(this, &nBox);
     // if half the points remain here move the rest to nBox
     /*
     if (pointsHere > maxSize / 2) {
@@ -214,20 +232,20 @@ struct BBox {
 
   NLOHMANN_DEFINE_TYPE_INTRUSIVE(bbox_t, corners, content)
   template <class os_t>
-  friend void toSVG(os_t& os, bbox_t& object, size_t x, size_t y, size_t width,
-                    size_t height) {
+  friend void toSVG(os_t& os, bbox_t& object, coord_t x, coord_t y,
+                    coord_t width, coord_t height) {
     // draw rectangle
     os << "<rect x=\"" << x << "\" y=\"" << y << "\" width=\"" << width
        << "\" height=\"" << height
        << "\" fill=\"none\" stroke-width=\"1\" stroke=\"green\"/>\n";
 
-    auto min0 = object.min(0), min1 = object.min(1), max0 = object.max(0),
-         max1 = object.max(1);
+    coord_t min0 = object.min(0), min1 = object.min(1), max0 = object.max(0),
+            max1 = object.max(1);
     for (auto& p : object.content) {
       if (p.null()) continue;
       // draw points relative to the box dimensions
-      size_t cx = x + ((p[0] - min0) / (max0 - min0)) * width;
-      size_t cy = y + ((p[1] - min1) / (max1 - min1)) * height;
+      coord_t cx = x + ((p[0] - min0) / (max0 - min0)) * width;
+      coord_t cy = y + ((p[1] - min1) / (max1 - min1)) * height;
       os << "<circle cx=\"" << cx << +"\" cy=\"" << cy
          << R"(" r="5" stroke-width="5" stroke="red"/>)"
          << "\n";

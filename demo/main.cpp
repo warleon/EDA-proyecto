@@ -18,15 +18,16 @@ using json = nlohmann::json;
 
 using ld = long double;
 using point_t = Point<std::vector<std::string>, ld, 2>;
-using bbox_t = BBox<point_t, 32>;
-using node_t = DiskNode<1000, bbox_t, 10>;
+using bbox_t = BBox<point_t, 20>;
+using node_t = DiskNode<1000, bbox_t, 32>;
 using pool_t = typename node_t::pool_t;
 using rtree_t = DiskRTree<node_t>;
 
-std::string readAll(std::ifstream& in) {
-  std::ostringstream sstr;
-  sstr << in.rdbuf();
-  return sstr.str();
+#define minPrecision (14 + 3)
+
+template <typename T>
+bool between(T x, T a, T b) {
+  return (x >= a) && (x <= b);
 }
 
 int main(int argc, char** argv) {
@@ -52,22 +53,21 @@ int main(int argc, char** argv) {
     CSVReader reader(config["files"][i], ',');
     while (reader.ok() && count < max) {
       try {
-        if (!reader.next()) continue;
+        if (!reader.next()) continue;  // check for invalid line
         for (size_t j = 0; j < dim; j++) {
-          coords[j] = stold(reader(config["coordNames"][j]));
+          // ignore low precision coords
+          auto value = reader(config["coordNames"][j]);
+          if (value.size() < minPrecision)
+            throw "coordenada con poca precision";
+          coords[j] = stold(value);
         }
+        if (!between(coords[0], (ld)-74.0, (ld)-73.0))
+          throw "coordenada X fuera de rango";
+        if (!between(coords[1], (ld)40.0, (ld)41.0))
+          throw "coordenada Y fuera de rango";
+        // if (!coords[0] || !coords[1]) throw "coordenadas invalidas";//si
+        // coord es 0 deberia ser atrapada x poca precision
       } catch (...) {  // ignore empty or bad formated coords
-        countIgnore++;
-        continue;
-      }
-      /*
-      if (!coords[0] || !coords[1]) {
-        countIgnore++;
-        continue;
-      }
-      */
-      if (fmod(coords[0], 0e-14) == 0 ||
-          fmod(coords[1], 0e-14) == 0) {  // ignore 0 and low precision coords
         countIgnore++;
         continue;
       }
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
   std::cout << count << " points inserted in total\n";
   std::cout << countIgnore << " points ignored in total\n";
   if (config["render"]) {
-    render("./RTree.svg", 1000, 1000);
+    render("./RTree.svg", 10000, 10000);
   }
 
   return 0;

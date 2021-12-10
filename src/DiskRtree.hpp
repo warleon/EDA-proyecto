@@ -7,6 +7,7 @@ class DiskRTree {
   using point_t = typename bbox_t::point_t;
   using id_t = typename node_t::id_t;
   using pointSet_t = std::vector<point_t>;
+  using coord_t = typename point_t::coord_t;
 
   id_t rootId;
 
@@ -70,8 +71,8 @@ class DiskRTree {
   NLOHMANN_DEFINE_TYPE_INTRUSIVE(DiskRTree<node_t>, rootId)
 
   template <class os_t>
-  friend void toSVG(os_t& os, DiskRTree<node_t>& object, size_t x, size_t y,
-                    size_t width, size_t height) {
+  friend void toSVG(os_t& os, DiskRTree<node_t>& object, coord_t x, coord_t y,
+                    coord_t width, coord_t height) {
     return toSVG(os, *node_t::get(object.rootId), x, y, width, height);
   }
 };
