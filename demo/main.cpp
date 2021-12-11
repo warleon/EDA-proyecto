@@ -3,6 +3,10 @@
 #include <DiskRtree.hpp>
 #include <Point.hpp>
 #include <SVGRenderer.hpp>
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/box.hpp>
+#include <boost/geometry/geometries/point.hpp>
+#include <boost/geometry/index/rtree.hpp>
 #include <cassert>
 #include <cmath>
 #include <fstream>
@@ -16,12 +20,23 @@
 
 using json = nlohmann::json;
 
+const size_t dimensions = 2;
+const size_t leafCap = 32;
+const size_t internCap = leafCap;
+const size_t poolCap = 1000;
+
 using ld = long double;
-using point_t = Point<std::vector<std::string>, ld, 2>;
-using bbox_t = BBox<point_t, 3>;
-using node_t = DiskNode<1000, bbox_t, 32>;
+using point_t = Point<std::vector<std::string>, ld, dimensions>;
+using bbox_t = BBox<point_t, leafCap>;
+using node_t = DiskNode<poolCap, bbox_t, internCap>;
 using pool_t = typename node_t::pool_t;
 using rtree_t = DiskRTree<node_t>;
+using coord_t = typename point_t::coord_t;
+
+namespace bg = boost::geometry;
+namespace bgi = boost::geometry::index;
+typedef bg::model::point<ld, dimensions, bg::cs::cartesian> boostPoint_t;
+typedef bg::model::box<boostPoint_t> boostBox_t;
 
 #define minPrecision (14 + 3)
 
@@ -43,6 +58,7 @@ int main(int argc, char** argv) {
 
   ld coords[dim];
   rtree_t tree;
+  bgi::rtree<boostPoint_t, bgi::linear<leafCap, 1>> rt;
   size_t count = 0;
   size_t countIgnore = 0;
   std::vector<std::string> data;
@@ -79,11 +95,28 @@ int main(int argc, char** argv) {
       data = reader.currentLine;
       point_t temp(coords, data);
       tree.insert(temp);
+      rt.insert(boostPoint_t(coords[0], coords[1]));
     }
   }
+  std::vector<point_t> myResult;
+  std::vector<boostPoint_t> boostResult;
+  ld qCoords[][2] = {
+      {config["queryRegion"][0][0], config["queryRegion"][0][1]},
+      {config["queryRegion"][1][0], config["queryRegion"][1][1]}};
+  boostBox_t box_region(boostPoint_t(qCoords[0][0], qCoords[0][1]),
+                        boostPoint_t(qCoords[1][0], qCoords[1][1]));
+
+  point_t a(qCoords[0]), b(qCoords[1]);
+
+  tree.getRegion(myResult, a, b);
+  rt.query(bgi::intersects(box_region), std::back_inserter(boostResult));
+
   std::cout << tree << "\n";
   std::cout << count << " points inserted in total\n";
   std::cout << countIgnore << " points ignored in total\n";
+
+  std::cout << "my rtree answer size:" << myResult.size() << "\n";
+  std::cout << "boost rtree answer size:" << boostResult.size() << "\n";
   if (config["render"]) {
     render("./RTree.svg", 5000, 5000);
   }
