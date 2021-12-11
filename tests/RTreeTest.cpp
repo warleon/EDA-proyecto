@@ -7,6 +7,10 @@
 #include <RTree.hpp>
 #include <RTreeNode.hpp>
 #include <SVGRenderer.hpp>
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/box.hpp>
+#include <boost/geometry/geometries/point.hpp>
+#include <boost/geometry/index/rtree.hpp>
 #include <iostream>
 
 using point_t = Point<int, double, 2>;
@@ -17,6 +21,11 @@ using dnode_t = DiskNode<500, bbox_t, 3>;
 using pool_t = typename dnode_t::pool_t;
 using dtree_t = DiskRTree<dnode_t>;
 using pointSet_t = typename dtree_t::pointSet_t;
+
+namespace bg = boost::geometry;
+namespace bgi = boost::geometry::index;
+typedef bg::model::point<float, 2, bg::cs::cartesian> boostPoint_t;
+typedef bg::model::box<boostPoint_t> boostBox_t;
 
 double ps[][2] = {{0, 0}, {10, 10}, {5, 5}, {15, 15}};
 
@@ -78,13 +87,26 @@ TEST(DiskRTreeTest, SVGRenderTest) {
 }
 TEST(DiskRTreeTest, getRegionTest) {
   point_t a(ps[0]), b(ps[1]), c(ps[2]), d(ps[3]);
+  boostPoint_t ba(ps[0][0], ps[0][1]), bb(ps[0][0], ps[0][1]),
+      bc(ps[0][0], ps[0][1]), bd(ps[0][0], ps[0][1]);
   dtree_t testTree;
+  bgi::rtree<boostPoint_t, bgi::linear<3, 1>> rt;
+
+  boostBox_t box_region(ba, bd);
   pointSet_t result;
+  std::vector<boostPoint_t> boostResult;
+
+  rt.insert(ba);
+  rt.insert(bb);
+  rt.insert(bc);
+  rt.insert(bd);
 
   testTree.insert(a);
   testTree.insert(b);
   testTree.insert(c);
   testTree.insert(d);
   testTree.getRegion(result, a, d);
+  rt.query(bgi::intersects(box_region), std::back_inserter(boostResult));
   ASSERT_EQ(result.size(), 4);
+  ASSERT_EQ(result.size(), boostResult.size());
 }

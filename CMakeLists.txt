@@ -3,7 +3,7 @@ project(EdaProyect)
 
 # GoogleTest requires at least C++11
 set(CMAKE_CXX_STANDARD 17)
-set( CMAKE_CXX_FLAGS "-Wall -Werror -g -fsanitize=address" )
+set( CMAKE_CXX_FLAGS "-Wall -Werror -g -fsanitize=address -lboost_system")
 
 include(FetchContent)
 FetchContent_Declare(
@@ -24,7 +24,8 @@ add_executable(
 
 FetchContent_Declare(json
   GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent
-  GIT_TAG v3.10.4)
+  GIT_TAG v3.10.4
+)
 
 FetchContent_GetProperties(json)
 if(NOT json_POPULATED)
@@ -32,7 +33,11 @@ if(NOT json_POPULATED)
   add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
-target_link_libraries(Demo  PRIVATE nlohmann_json::nlohmann_json )
+
+target_link_libraries(Demo
+  PRIVATE
+  nlohmann_json::nlohmann_json 
+)
 
 include_directories(src)
 link_directories(src)

@@ -163,6 +163,7 @@ struct DiskNode {
       node->add(sonsId[i]);
       sonsId[i] = 0;
     }
+    // if all nodes are in 1 parent node split them randomly
     if (node->isFull() || isFull()) fixSplit(this, node);
 
     // insert the overflow point to the closest pivot
