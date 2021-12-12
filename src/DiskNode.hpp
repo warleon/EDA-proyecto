@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Pool.hpp>
+#include <iostream>
 #include <limits>
 #include <nlohmann/json.hpp>
 #include <sstream>
@@ -51,7 +52,7 @@ struct DiskNode {
     parentId = 0;
   }
   id_t id() { return selfId; }
-  bool isLeaf() { return box.content.size() /*&& hasSons() == MAX_SIZE*/; }
+  bool isLeaf() { return box.content.size() /* || (hasSons() == MAX_SIZE)*/; }
   // returns the position of the first non null son or MAX_SIZE if there isn't
   size_t hasSons() {
     for (size_t i = 0; i < M; i++) {
@@ -197,6 +198,7 @@ struct DiskNode {
 
   // returns new id if the insert causes an split else returns null id(0)
   id_t insert(const point_t& p) {
+    // std::cerr << "insert: " << *this << std::endl;
     id_t sId = 0;
     if (isLeaf()) {
       if (!isFull()) {
@@ -215,7 +217,7 @@ struct DiskNode {
         auto sA = son->box.area();
         auto cAp = chosen->box.area(p);
         auto sAp = son->box.area(p);
-        if ((sAp - sA) < (cAp - cA)) {
+        if ((sAp - sA) <= (cAp - cA)) {
           chosen = son;
         }
       }

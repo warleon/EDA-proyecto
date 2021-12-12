@@ -11,6 +11,7 @@
 #include <boost/geometry/geometries/box.hpp>
 #include <boost/geometry/geometries/point.hpp>
 #include <boost/geometry/index/rtree.hpp>
+#include <filesystem>
 #include <iostream>
 
 using point_t = Point<int, double, 2>;
@@ -22,12 +23,20 @@ using pool_t = typename dnode_t::pool_t;
 using dtree_t = DiskRTree<dnode_t>;
 using pointSet_t = typename dtree_t::pointSet_t;
 
+namespace fs = std::filesystem;
 namespace bg = boost::geometry;
 namespace bgi = boost::geometry::index;
 typedef bg::model::point<float, 2, bg::cs::cartesian> boostPoint_t;
 typedef bg::model::box<boostPoint_t> boostBox_t;
 
 double ps[][2] = {{0, 0}, {10, 10}, {5, 5}, {15, 15}};
+
+void cleanDir() {
+  fs::path hPath = dnode_t::pool.getHome();
+  fs::remove_all(hPath);
+  dnode_t::pool.reset();
+  fs::create_directory(hPath);
+}
 
 // Demonstrate some basic assertions.
 TEST(RTreeTest, insertTest) {
@@ -44,8 +53,12 @@ TEST(RTreeTest, insertTest) {
   std::cerr << 10 << "\n";
   std::cerr << testTree << "\n";
 }
-TEST(DiskRTreeTest, DefaultTest) { dtree_t testTree; }
+TEST(DiskRTreeTest, DefaultTest) {
+  cleanDir();
+  dtree_t testTree;
+}
 TEST(DiskRTreeTest, insertTest1) {
+  cleanDir();
   dtree_t testTree;
   double arr[2] = {5, 5};
   point_t p(arr);
@@ -63,6 +76,7 @@ TEST(DiskRTreeTest, insertTest1) {
 }
 
 TEST(DiskRTreeTest, insertTest2) {
+  cleanDir();
   point_t a(ps[0]), b(ps[1]), c(ps[2]), d(ps[3]);
   dtree_t testTree;
   std::cerr << testTree << "\n";
@@ -76,6 +90,7 @@ TEST(DiskRTreeTest, insertTest2) {
   std::cerr << testTree << "\n";
 }
 TEST(DiskRTreeTest, SVGRenderTest) {
+  cleanDir();
   point_t a(ps[0]), b(ps[1]), c(ps[2]), d(ps[3]);
   dtree_t testTree;
   SVGRenderer<dtree_t> render(testTree);
@@ -86,6 +101,7 @@ TEST(DiskRTreeTest, SVGRenderTest) {
   render("./RTree.svg", 100, 100);
 }
 TEST(DiskRTreeTest, getRegionTest) {
+  cleanDir();
   point_t a(ps[0]), b(ps[1]), c(ps[2]), d(ps[3]);
   boostPoint_t ba(ps[0][0], ps[0][1]), bb(ps[0][0], ps[0][1]),
       bc(ps[0][0], ps[0][1]), bd(ps[0][0], ps[0][1]);

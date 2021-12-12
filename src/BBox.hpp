@@ -18,8 +18,8 @@ struct BBox {
   std::vector<point_t> content;
 
   BBox() { assert(maxSize >= 3); }
-  BBox(point_t a, point_t b) {
-    assert(maxSize);
+  BBox(point_t a, point_t b) : content(0) {
+    assert(maxSize >= 3);
     corners[0] = a;
     corners[1] = b;
   }

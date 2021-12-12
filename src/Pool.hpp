@@ -99,6 +99,7 @@ class Pool {
     os << lastId;
   }
   auto getHome() { return home; }
+  void reset() { lastId = 1; }
 
   bool exists(id_t i) {
     fs::path p(fs::path(std::to_string(i)) / ext);
