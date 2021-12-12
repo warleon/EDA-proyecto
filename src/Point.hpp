@@ -60,15 +60,19 @@ struct Point {
   }
   size_t dim() { return N; }
   coord_t distAlong(point_t x, size_t d) {
-    assert(!x.null() && !null() && d < N);
+    assert(d < N);
+    assert(!null());
+    assert(!x.null());
     return std::abs(coords[d] - x.coords[d]);
   }
   coord_t manDist(point_t x) {
     coord_t dist = 0;
+    coord_t t;
     for (size_t i = 0; i < N; i++) {
-      dist += distAlong(x, i);
+      t = distAlong(x, i);
+      dist += t * t;
     }
-    return dist;
+    return std::sqrt(dist);
   }
 
  public:

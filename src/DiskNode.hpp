@@ -206,17 +206,15 @@ struct DiskNode {
 
   // returns new id if the insert causes an split else returns null id(0)
   id_t insert(const point_t& p) {
-    // bool resizeNeeded = false;
     id_t sId = 0;
     if (isLeaf()) {
       if (!isFull()) {
-        // if (box.area(p) != box.area()) resizeNeeded = true;
         add(p);
       } else {
         return split(p);
       }
     } else {  // since is nonLeaf it has at least one child
-      // get minimum Area enlargment bbox
+              // find minimun enlargment area
       node_t* chosen = nullptr;
       for (auto sonId : sonsId) {
         if (!sonId) continue;
@@ -226,15 +224,8 @@ struct DiskNode {
         }
       }
       assert(chosen);
-      // if (chosen->box.area(p) != chosen->box.area()) resizeNeeded = true;
       sId = chosen->insert(p);
     }
-    // resize after insertion
-    /*
-    if (resizeNeeded) {
-      resize();
-    }
-    */
     if (sId) {              // if son node has splited
       if (isFull())         // and current node is full
         return split(sId);  // split current node and comunicate to parent node

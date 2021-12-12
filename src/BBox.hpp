@@ -1,6 +1,7 @@
 #pragma once
 #include <cassert>
 #include <cmath>
+#include <limits>
 #include <nlohmann/json.hpp>
 #include <vector>
 
@@ -121,6 +122,7 @@ struct BBox {
     return overlap_ == d;
   }
   // dummy split
+  /*
   void fixSplit(bbox_t* a, bbox_t* b) {
     assert(a->isFull() || b->isFull());
     bbox_t* full;
@@ -138,31 +140,53 @@ struct BBox {
       full->content[i].nullify();
     }
   }
+  */
 
-  // with the corners as pivots assign each point to the closest pivot until
+  //
   bbox_t trySplit(point_t p) {
     bbox_t nBox;
     if (!isFull()) {
       assert(tryInsert(p));
       return nBox;
     };
-    auto pivots = corners;
-    size_t i = 0;
-    // repart the points between nBox and this->box
-    for (; i < maxSize; i++) {
-      // if closest to 1st pivot point remains in this box
-      if (content[i].manDist(pivots[0]) < content[i].manDist(pivots[1])) {
-        continue;
+    // create distance matrix
+    coord_t lmin = std::numeric_limits<coord_t>::min();
+    std::vector<std::vector<coord_t>> dist(
+        maxSize, std ::vector<coord_t>(maxSize, lmin));
+    for (size_t i = 0; i < maxSize; i++) {
+      if (content[i].null()) continue;
+      for (size_t j = 0; j < maxSize; j++) {
+        if (content[j].null()) continue;
+        if (dist[i][j] != lmin) continue;
+        dist[i][j] = content[i].manDist(content[j]);
+        dist[j][i] = dist[i][j];
       }
-      // else move it to nBox
-      assert(nBox.tryInsert(content[i]));
-      content[i] = point_t();
-
-      // if (pointsThere >= maxSize / 2 || pointsHere >= maxSize / 2) break;
     }
-    if (isFull() || nBox.isFull()) fixSplit(this, &nBox);
-    // insert the overflow point to the closest pivot
-    if (p.manDist(pivots[0]) < p.manDist(pivots[1])) {
+    // find largest distance
+    coord_t mDist = lmin;
+    size_t fartest[2];
+    coord_t d;
+    for (size_t i = 0; i < maxSize; i++) {
+      for (size_t j = 0; j < maxSize; j++) {
+        d = dist[i][j];
+        if (d == lmin) continue;
+        if (d <= mDist) continue;
+        mDist = d;
+        fartest[0] = i;
+        fartest[1] = j;
+      }
+    }
+    bool here = p.manDist(content[fartest[0]]) < p.manDist(content[fartest[1]]);
+    // move points
+    for (size_t i = 0; i < maxSize; i++) {
+      if (content[i].null()) continue;
+      if (dist[fartest[0]][i] < dist[fartest[1]][i]) continue;
+      assert(nBox.tryInsert(content[i]));
+      content[i].nullify();
+    }
+    assert(!isFull());
+    assert(!nBox.isFull());
+    if (here) {
       assert(tryInsert(p));
     } else {
       assert(nBox.tryInsert(p));
@@ -194,10 +218,12 @@ struct BBox {
   coord_t manDist(point_t p) {
     assert(!null());
     coord_t dist = 0;
+    coord_t t = 0;
     for (size_t i = 0; i < p.dim(); i++) {
-      dist += std::max(p.distAlong(corners[0], i), p.distAlong(corners[1], i));
+      t = std::max(p.distAlong(corners[0], i), p.distAlong(corners[1], i));
+      dist += t * t;
     }
-    return dist;
+    return std::sqrt(dist);
   }
 
   size_t size() { return maxSize; }
