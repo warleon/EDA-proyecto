@@ -75,6 +75,14 @@ struct BBox {
 
     return false;
   }
+  point_t center() {
+    const size_t d = corners[0].dim();
+    coord_t ce[d];
+    for (size_t i = 0; i < d; i++) {
+      ce[i] = (corners[0][i] + corners[1][i]) / 2;
+    }
+    return point_t(ce);
+  }
   coord_t min(size_t d) {
     coord_t r;
     if (content.size()) {
@@ -121,26 +129,6 @@ struct BBox {
     }
     return overlap_ == d;
   }
-  // dummy split
-  /*
-  void fixSplit(bbox_t* a, bbox_t* b) {
-    assert(a->isFull() || b->isFull());
-    bbox_t* full;
-    bbox_t* empty;
-    if (a->isFull()) {
-      full = a;
-      empty = b;
-    } else {
-      full = b;
-      empty = a;
-    }
-    auto M = full->content.size();
-    for (size_t i = 0; i < M / 2; i++) {
-      empty->content[i] = full->content[i];
-      full->content[i].nullify();
-    }
-  }
-  */
 
   //
   bbox_t trySplit(point_t p) {
@@ -214,6 +202,7 @@ struct BBox {
     }
     return r;
   }
+  coord_t manDist(bbox_t& other) { return center().manDist(other.center()); }
   // return manhatan distance between p and fartest point of box
   coord_t manDist(point_t p) {
     assert(!null());

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Pool.hpp>
+#include <limits>
 #include <nlohmann/json.hpp>
 #include <sstream>
 #include <string>
@@ -144,37 +145,55 @@ struct DiskNode {
   }
 
   id_t split(id_t id) {
+    assert(id);
     assert(isFull());
     assert(!isLeaf());
     node_t* node = node_t::get(0);
     assert(node);
     // begin split algorithm
-    const auto& pivots = box.corners;
-    node_t* son = nullptr;
-
-    // repart the nodes between node and *this
+    // create distance matrix
+    coord_t lmin = std::numeric_limits<coord_t>::min();
+    std::vector<std::vector<coord_t>> dist(M, std ::vector<coord_t>(M, lmin));
     for (size_t i = 0; i < M; i++) {
-      // if closest to 1st pivot point remains in *this
-      son = node_t::get(sonsId[i]);
-      assert(son);
-      assert(!son->null());
-      if (son->box.manDist(pivots[0]) < son->box.manDist(pivots[1])) {
-        continue;
+      if (!sonsId[i]) continue;
+      node_t* iNode = node_t::get(sonsId[i]);
+      for (size_t j = 0; j < M; j++) {
+        if (!sonsId[j]) continue;
+        node_t* jNode = node_t::get(sonsId[j]);
+        if (dist[i][j] != lmin) continue;
+        dist[i][j] = iNode->box.manDist(jNode->box);
+        dist[j][i] = dist[i][j];
       }
-      // else move it to node
+    }
+    // find largest distance
+    coord_t mDist = lmin;
+    size_t fartest[2];
+    coord_t d;
+    for (size_t i = 0; i < M; i++) {
+      for (size_t j = 0; j < M; j++) {
+        d = dist[i][j];
+        if (d == lmin) continue;
+        if (d <= mDist) continue;
+        mDist = d;
+        fartest[0] = i;
+        fartest[1] = j;
+      }
+    }
+    bool here = node_t::get(id)->box.manDist(node_t::get(fartest[0])->box) <
+                node_t::get(id)->box.manDist(node_t::get(fartest[1])->box);
+    // move points
+    for (size_t i = 0; i < M; i++) {
+      if (!sonsId[i]) continue;
+      if (dist[fartest[0]][i] < dist[fartest[1]][i]) continue;
       node->add(sonsId[i]);
       sonsId[i] = 0;
     }
-    // if all nodes are in 1 parent node split them randomly
-    if (node->isFull() || isFull()) fixSplit(this, node);
-
-    // insert the overflow point to the closest pivot
-    son = node_t::get(id);
-    assert(son);
-    if (son->box.manDist(pivots[0]) < son->box.manDist(pivots[1])) {
-      add(son->selfId);
+    assert(!isFull());
+    assert(!node->isFull());
+    if (here) {
+      add(id);
     } else {
-      node->add(son->selfId);
+      node->add(id);
     }
     // end of split algorithm
     resize();
