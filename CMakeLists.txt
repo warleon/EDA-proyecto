@@ -3,7 +3,8 @@ project(EdaProyect)
 
 # GoogleTest requires at least C++11
 set(CMAKE_CXX_STANDARD 17)
-set( CMAKE_CXX_FLAGS "-Wall -Werror -g -fsanitize=address -lboost_system")
+set( CMAKE_CXX_FLAGS "-Wall -Werror -lboost_system -DNDEBUG" )
+# -g -fsanitize=address 
 
 include(FetchContent)
 FetchContent_Declare(

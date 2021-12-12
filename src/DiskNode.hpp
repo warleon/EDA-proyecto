@@ -125,25 +125,6 @@ struct DiskNode {
     return node->selfId;
   }
 
-  // make a dummy split to set each node to have half the children
-  void fixSplit(node_t* a, node_t* b) {
-    assert(a->isFull() || b->isFull());
-    node_t* full = nullptr;
-    node_t* empty = nullptr;
-    if (a->isFull()) {
-      full = a;
-      empty = b;
-    } else {
-      full = b;
-      empty = a;
-    }
-
-    for (size_t i = 0; i < M / 2; i++) {
-      empty->sonsId[i] = full->sonsId[i];
-      full->sonsId[i] = 0;
-    }
-  }
-
   id_t split(id_t id) {
     assert(id);
     assert(isFull());
@@ -151,40 +132,31 @@ struct DiskNode {
     node_t* node = node_t::get(0);
     assert(node);
     // begin split algorithm
-    // create distance matrix
-    coord_t lmin = std::numeric_limits<coord_t>::min();
-    std::vector<std::vector<coord_t>> dist(M, std ::vector<coord_t>(M, lmin));
-    for (size_t i = 0; i < M; i++) {
-      if (!sonsId[i]) continue;
-      node_t* iNode = node_t::get(sonsId[i]);
-      for (size_t j = 0; j < M; j++) {
-        if (!sonsId[j]) continue;
-        node_t* jNode = node_t::get(sonsId[j]);
-        if (dist[i][j] != lmin) continue;
-        dist[i][j] = iNode->box.manDist(jNode->box);
-        dist[j][i] = dist[i][j];
-      }
-    }
     // find largest distance
-    coord_t mDist = lmin;
-    size_t fartest[2];
-    coord_t d;
+    // size_t fartest[] = {0, 1};
+    node_t* fnode[] = {node_t::get(sonsId[0]), node_t::get(sonsId[1])};
+    coord_t mDist = fnode[0]->box.manDist(fnode[1]->box);
+    node_t* cnode = nullptr;
+    coord_t d0;
+    coord_t d1;
     for (size_t i = 0; i < M; i++) {
-      for (size_t j = 0; j < M; j++) {
-        d = dist[i][j];
-        if (d == lmin) continue;
-        if (d <= mDist) continue;
-        mDist = d;
-        fartest[0] = i;
-        fartest[1] = j;
+      cnode = node_t::get(sonsId[i]);
+      d0 = cnode->box.manDist(fnode[0]->box);
+      d1 = cnode->box.manDist(fnode[1]->box);
+      if (std::max(d0, d1) > mDist) {
+        mDist = std::max(d0, d1);
+        // fartest[d0 > d1 ? 1 : 0] = i;
+        fnode[d0 > d1 ? 1 : 0] = cnode;
       }
     }
-    bool here = node_t::get(id)->box.manDist(node_t::get(fartest[0])->box) <
-                node_t::get(id)->box.manDist(node_t::get(fartest[1])->box);
+    bool here = node_t::get(id)->box.manDist(fnode[0]->box) <
+                node_t::get(id)->box.manDist(fnode[1]->box);
     // move points
     for (size_t i = 0; i < M; i++) {
-      if (!sonsId[i]) continue;
-      if (dist[fartest[0]][i] < dist[fartest[1]][i]) continue;
+      cnode = node_t::get(sonsId[i]);
+      d0 = cnode->box.manDist(fnode[0]->box);
+      d1 = cnode->box.manDist(fnode[1]->box);
+      if (d0 < d1) continue;
       node->add(sonsId[i]);
       sonsId[i] = 0;
     }

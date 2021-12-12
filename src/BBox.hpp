@@ -17,7 +17,7 @@ struct BBox {
   point_t corners[2];
   std::vector<point_t> content;
 
-  BBox() { assert(maxSize); }
+  BBox() { assert(maxSize >= 3); }
   BBox(point_t a, point_t b) {
     assert(maxSize);
     corners[0] = a;
@@ -62,8 +62,6 @@ struct BBox {
   }
   // tries to insert p in content but fails if is full
   bool tryInsert(point_t p) {
-    assert(maxSize != 0);
-
     if (!content.size()) content.resize(maxSize);
     for (size_t i = 0; i < maxSize; i++) {
       if (content[i].null()) {
@@ -137,41 +135,30 @@ struct BBox {
       assert(tryInsert(p));
       return nBox;
     };
-    // create distance matrix
-    coord_t lmin = std::numeric_limits<coord_t>::min();
-    std::vector<std::vector<coord_t>> dist(
-        maxSize, std ::vector<coord_t>(maxSize, lmin));
-    for (size_t i = 0; i < maxSize; i++) {
-      if (content[i].null()) continue;
-      for (size_t j = 0; j < maxSize; j++) {
-        if (content[j].null()) continue;
-        if (dist[i][j] != lmin) continue;
-        dist[i][j] = content[i].manDist(content[j]);
-        dist[j][i] = dist[i][j];
-      }
-    }
     // find largest distance
-    coord_t mDist = lmin;
-    size_t fartest[2];
-    coord_t d;
-    for (size_t i = 0; i < maxSize; i++) {
-      for (size_t j = 0; j < maxSize; j++) {
-        d = dist[i][j];
-        if (d == lmin) continue;
-        if (d <= mDist) continue;
-        mDist = d;
-        fartest[0] = i;
-        fartest[1] = j;
+    size_t fartest[] = {0, 1};
+    coord_t mDist = content[0].manDist(content[1]);
+    for (size_t i = 2; i < maxSize; i++) {
+      auto d0 = content[i].manDist(content[fartest[0]]);
+      auto d1 = content[i].manDist(content[fartest[1]]);
+      if (std::max(d0, d1) > mDist) {
+        mDist = std::max(d0, d1);
+        fartest[d0 > d1 ? 1 : 0] = i;
       }
     }
+
     bool here = p.manDist(content[fartest[0]]) < p.manDist(content[fartest[1]]);
+    point_t pivots[] = {content[fartest[0]], content[fartest[1]]};
     // move points
     for (size_t i = 0; i < maxSize; i++) {
-      if (content[i].null()) continue;
-      if (dist[fartest[0]][i] < dist[fartest[1]][i]) continue;
+      // if (fartest[1] == i) continue;
+      if (content[i].manDist(pivots[0]) < content[i].manDist(pivots[1]))
+        continue;
       assert(nBox.tryInsert(content[i]));
       content[i].nullify();
     }
+    // assert(nBox.tryInsert(content[fartest[1]]));
+    // content[fartest[1]].nullify();
     assert(!isFull());
     assert(!nBox.isFull());
     if (here) {
