@@ -223,11 +223,13 @@ struct BBox {
   template <class os_t>
   friend void toSVG(os_t& os, bbox_t& object, coord_t x, coord_t y,
                     coord_t width, coord_t height) {
+    os << "<g data-corners=\""
+       << "(" << object.corners[0][0] << "," << object.corners[0][1] << ")"
+       << "(" << object.corners[1][0] << "," << object.corners[1][1] << ")\""
+       << ">\n";
     // draw rectangle
     os << "<rect x=\"" << x << "\" y=\"" << y << "\" width=\"" << width
-       << "\" height=\"" << height << "\" data-corners=\""
-       << "(" << object.corners[0][0] << "," << object.corners[0][1] << ")"
-       << "(" << object.corners[1][0] << "," << object.corners[1][1] << ")"
+       << "\" height=\"" << height
        << R"(" fill="none" stroke-width="1" stroke="green"/>)"
        << "\n";
 
@@ -243,5 +245,6 @@ struct BBox {
          << R"(" r="5" stroke-width="5" stroke="red"/>)"
          << "\n";
     }
+    os << "</g>\n";
   }
 };

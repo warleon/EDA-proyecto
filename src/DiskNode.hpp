@@ -70,12 +70,13 @@ struct DiskNode {
   }
 
   coord_t min(size_t d) {
-    assert(hasSons() != MAX_SIZE);
-    auto son0 = node_t::get(sonsId[0]);
+    size_t first = hasSons();
+    assert(first != MAX_SIZE);
+    auto son0 = node_t::get(sonsId[first]);
     coord_t m = std::min(son0->box.corners[0][d], son0->box.corners[1][d]);
     coord_t curr = m;
 
-    for (size_t i = 0; i < M; i++) {
+    for (size_t i = first; i < M; i++) {
       if (!sonsId[i]) continue;
       auto son = node_t::get(sonsId[i]);
       curr = std::min(son->box.corners[0][d], son->box.corners[1][d]);
@@ -84,12 +85,13 @@ struct DiskNode {
     return m;
   }
   coord_t max(size_t d) {
-    assert(hasSons() != MAX_SIZE);
-    auto son0 = node_t::get(sonsId[0]);
+    size_t first = hasSons();
+    assert(first != MAX_SIZE);
+    auto son0 = node_t::get(sonsId[first]);
     coord_t m = std::max(son0->box.corners[0][d], son0->box.corners[1][d]);
     coord_t curr = m;
 
-    for (size_t i = 0; i < M; i++) {
+    for (size_t i = first; i < M; i++) {
       if (!sonsId[i]) continue;
       auto son = node_t::get(sonsId[i]);
       curr = std::max(son->box.corners[0][d], son->box.corners[1][d]);
@@ -285,20 +287,28 @@ struct DiskNode {
   friend void toSVG(os_t& os, node_t& object, coord_t x, coord_t y,
                     coord_t width, coord_t height) {
     // draw box
-    if (object.isLeaf()) toSVG(os, object.box, x, y, width, height);
-    coord_t min0 = object.box.min(0), min1 = object.box.min(1);
-    coord_t max0 = object.box.max(0), max1 = object.box.max(1);
-    for (auto& sId : object.sonsId) {
-      if (!sId) continue;
-      // draw children boxes with sizes relative to this box
-      auto son = *node_t::get(sId);
-      coord_t smin0 = son.box.min(0), smin1 = son.box.min(1);
-      coord_t smax0 = son.box.max(0), smax1 = son.box.max(1);
-      coord_t rX = x + ((smin0 - min0) / (max0 - min0)) * width;
-      coord_t rY = y + ((smin1 - min1) / (max1 - min1)) * height;
-      coord_t rW = ((smax0 - smin0) / (max0 - min0)) * width;
-      coord_t rH = ((smax1 - smin1) / (max1 - min1)) * height;
-      toSVG(os, son, rX, rY, rW, rH);
+    if (object.isLeaf())
+      toSVG(os, object.box, x, y, width, height);
+    else {
+      coord_t min0 = object.min(0), min1 = object.min(1);
+      coord_t max0 = object.max(0), max1 = object.max(1);
+      os << "<g data-corners=\""
+         << "(" << min0 << "," << min1 << ")"
+         << "(" << min1 << "," << max1 << ")\""
+         << ">\n";
+      for (auto& sId : object.sonsId) {
+        if (!sId) continue;
+        // draw children boxes with sizes relative to this box
+        auto son = *node_t::get(sId);
+        coord_t smin0 = son.box.min(0), smin1 = son.box.min(1);
+        coord_t smax0 = son.box.max(0), smax1 = son.box.max(1);
+        coord_t rX = x + ((smin0 - min0) / (max0 - min0)) * width;
+        coord_t rY = y + ((smin1 - min1) / (max1 - min1)) * height;
+        coord_t rW = ((smax0 - smin0) / (max0 - min0)) * width;
+        coord_t rH = ((smax1 - smin1) / (max1 - min1)) * height;
+        toSVG(os, son, rX, rY, rW, rH);
+      }
+      os << "</g>\n";
     }
   }
 };

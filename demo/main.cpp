@@ -21,7 +21,7 @@
 using json = nlohmann::json;
 
 const size_t dimensions = 2;
-const size_t leafCap = 50;
+const size_t leafCap = 5;
 const size_t internCap = leafCap;
 const size_t poolCap = 1000;
 
