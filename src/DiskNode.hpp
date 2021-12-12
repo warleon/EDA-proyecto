@@ -238,7 +238,12 @@ struct DiskNode {
       for (auto sonId : sonsId) {
         if (!sonId) continue;
         auto son = node_t::get(sonId);
-        if (!chosen || son->box.area(p) < chosen->box.area(p)) {
+        if (!chosen) chosen = son;
+        auto cA = chosen->box.area();
+        auto sA = son->box.area();
+        auto cAp = chosen->box.area(p);
+        auto sAp = son->box.area(p);
+        if ((sAp - sA) < (cAp - cA)) {
           chosen = son;
         }
       }

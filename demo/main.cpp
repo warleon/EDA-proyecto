@@ -21,7 +21,7 @@
 using json = nlohmann::json;
 
 const size_t dimensions = 2;
-const size_t leafCap = 5;
+const size_t leafCap = 3;
 const size_t internCap = leafCap;
 const size_t poolCap = 1000;
 
@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
   if (config["boostTest"])
     std::cout << "boost rtree answer size:" << boostResult.size() << "\n";
   if (config["render"]) {
-    render("./RTree.svg", 5000, 5000);
+    render("./RTree.svg", 3000, 3000);
   }
   // update config
   std::ofstream os(configFilePath);
