@@ -135,7 +135,7 @@ struct BBox {
     auto M = full->content.size();
     for (size_t i = 0; i < M / 2; i++) {
       empty->content[i] = full->content[i];
-      full->content[i] = point_t();
+      full->content[i].nullify();
     }
   }
 
@@ -225,8 +225,11 @@ struct BBox {
                     coord_t width, coord_t height) {
     // draw rectangle
     os << "<rect x=\"" << x << "\" y=\"" << y << "\" width=\"" << width
-       << "\" height=\"" << height
-       << "\" fill=\"none\" stroke-width=\"1\" stroke=\"green\"/>\n";
+       << "\" height=\"" << height << "\" data-corners=\""
+       << "(" << object.corners[0][0] << "," << object.corners[0][1] << ")"
+       << "(" << object.corners[1][0] << "," << object.corners[1][1] << ")"
+       << R"(" fill="none" stroke-width="1" stroke="green"/>)"
+       << "\n";
 
     coord_t min0 = object.min(0), min1 = object.min(1), max0 = object.max(0),
             max1 = object.max(1);
@@ -235,7 +238,8 @@ struct BBox {
       // draw points relative to the box dimensions
       coord_t cx = x + ((p[0] - min0) / (max0 - min0)) * width;
       coord_t cy = y + ((p[1] - min1) / (max1 - min1)) * height;
-      os << "<circle cx=\"" << cx << +"\" cy=\"" << cy
+      os << "<circle cx=\"" << cx << +"\" cy=\"" << cy << "\" data-coords=\""
+         << "(" << p[0] << "," << p[1] << ")"
          << R"(" r="5" stroke-width="5" stroke="red"/>)"
          << "\n";
     }

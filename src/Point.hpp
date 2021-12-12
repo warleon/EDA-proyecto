@@ -49,7 +49,7 @@ struct Point {
     return *this;
   }
   */
-
+  void nullify() { null_ = true; }
   bool null() { return null_; }
   bool between(point_t a, point_t b) {
     for (size_t i = 0; i < N; i++) {

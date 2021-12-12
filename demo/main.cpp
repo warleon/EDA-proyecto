@@ -52,7 +52,6 @@ int main(int argc, char** argv) {
 
   json config;
   configFile >> config;
-  size_t max = config["max"];
 
   const size_t dim = config["coordNames"].size();
 
@@ -65,11 +64,16 @@ int main(int argc, char** argv) {
   SVGRenderer<rtree_t> render(tree);
 
   for (size_t i = 0; i < config["files"].size(); i++) {
-    // std::cout << config["files"][i] << std::endl;
-    CSVReader reader(config["files"][i], ',');
+    std::cout << config["files"][i] << std::endl;
+    CSVReader reader(config["files"][i]["name"], ',');
+    size_t max = config["files"][i]["max"];
+    size_t skip = config["files"][i]["from"];
+    for (size_t c = 0; reader.ok() && c < skip; c++) {
+      reader.next();
+    }
     while (reader.ok() && count < max) {
       try {
-        if (!reader.next()) continue;  // check for invalid line
+        if (!reader.next()) throw "linea invalida";
         for (size_t j = 0; j < dim; j++) {
           // ignore low precision coords
           auto value = reader(config["coordNames"][j]);
@@ -77,26 +81,33 @@ int main(int argc, char** argv) {
             throw "coordenada con poca precision";
           coords[j] = stold(value);
         }
-        if (!between(coords[0], (ld)-74.0, (ld)-73.75))
+        if (!between(coords[0], (ld)config["filter"][0][0],
+                     (ld)config["filter"][0][1]))
           throw "coordenada X fuera de rango";
-        if (!between(coords[1], (ld)40.0, (ld)41.0))
+        if (!between(coords[1], (ld)config["filter"][1][0],
+                     (ld)config["filter"][1][1]))
           throw "coordenada Y fuera de rango";
-        // if (!coords[0] || !coords[1]) throw "coordenadas invalidas";//si
-        // coord es 0 deberia ser atrapada x poca precision
       } catch (...) {  // ignore empty or bad formated coords
         countIgnore++;
         continue;
       }
-      count++;
-      if (count % 100000 == 0) {
-        std::cout << count << " points inserted\n";
-        std::cout << countIgnore << " points ignored\n";
-      }
       data = reader.currentLine;
       point_t temp(coords, data);
       tree.insert(temp);
-      rt.insert(boostPoint_t(coords[0], coords[1]));
+      if (config["boostTest"]) rt.insert(boostPoint_t(coords[0], coords[1]));
+      count++;
+      if (count % (size_t)config["logInterval"] == 0) {
+        std::cout << count << " points inserted\n";
+        std::cout << countIgnore << " points ignored\n";
+      }
     }
+    std::cout << count << " points inserted in total\n";
+    std::cout << countIgnore << " points ignored in total\n";
+    // update config
+    config["files"][i]["from"] =
+        (size_t)config["files"][i]["from"] + count + countIgnore;
+    count = 0;
+    countIgnore = 0;
   }
   std::vector<point_t> myResult;
   std::vector<boostPoint_t> boostResult;
@@ -109,17 +120,20 @@ int main(int argc, char** argv) {
   point_t a(qCoords[0]), b(qCoords[1]);
 
   tree.getRegion(myResult, a, b);
-  rt.query(bgi::intersects(box_region), std::back_inserter(boostResult));
+  if (config["boostTest"])
+    rt.query(bgi::intersects(box_region), std::back_inserter(boostResult));
 
   std::cout << tree << "\n";
-  std::cout << count << " points inserted in total\n";
-  std::cout << countIgnore << " points ignored in total\n";
 
   std::cout << "my rtree answer size:" << myResult.size() << "\n";
-  std::cout << "boost rtree answer size:" << boostResult.size() << "\n";
+  if (config["boostTest"])
+    std::cout << "boost rtree answer size:" << boostResult.size() << "\n";
   if (config["render"]) {
     render("./RTree.svg", 5000, 5000);
   }
+  // update config
+  std::ofstream os(configFilePath);
+  os << config;
 
   return 0;
 }

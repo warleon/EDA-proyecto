@@ -21,6 +21,7 @@ class Pool {
   std::unordered_map<id_t, pos_t> idToPos;
   std::bitset<size> dirty, clock;
   fs::path home, ext;
+  id_t lastId = 1;
 
   // clock evict policy returns position to evict
   pos_t chooseToEvict() {
@@ -37,10 +38,7 @@ class Pool {
   }
 
   // creates a new id
-  id_t createId() {
-    static id_t count = 1;
-    return count++;
-  }
+  id_t createId() { return lastId++; }
   // advances the clock counter
   pos_t tick() {
     static pos_t count = 0;
@@ -78,6 +76,12 @@ class Pool {
     for (auto& it : pool) {
       it = new node_t;
     }
+    // check for previous runs
+    fs::path inPath("lastId");
+    std::ifstream is(home / inPath);
+    if (is.is_open()) {
+      is >> lastId;
+    }
   }
   ~Pool() {
     for (size_t i = 0; i < size; i++) {
@@ -88,8 +92,13 @@ class Pool {
       delete pool[i];
       pool[i] = nullptr;
     }
+
+    fs::path outPath("lastId");
+    std::ofstream os(home / outPath);
+    assert(os.is_open());
+    os << lastId;
   }
-  // void configFiles(std::string h, std::string e) {}
+  auto getHome() { return home; }
 
   bool exists(id_t i) {
     fs::path p(fs::path(std::to_string(i)) / ext);

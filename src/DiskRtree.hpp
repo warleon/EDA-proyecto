@@ -1,6 +1,9 @@
 #pragma once
 
+#include <filesystem>
+#include <fstream>
 #include <string>
+namespace fs = std::filesystem;
 
 template <class node_t>
 class DiskRTree {
@@ -16,8 +19,20 @@ class DiskRTree {
 
  public:
   // DiskRTree(std::string mainDir = ".", std::string ext = ".json") {}
-  DiskRTree() { rootId = 0; }
-  ~DiskRTree() {}
+  DiskRTree() {
+    rootId = 0;
+    auto home = node_t::pool.getHome();
+    fs::path inPath("root");
+    std::ifstream is(home / inPath);
+    if (is.is_open()) is >> rootId;
+  }
+  ~DiskRTree() {
+    auto home = node_t::pool.getHome();
+    fs::path outPath("root");
+    std::ofstream os(home / outPath);
+    assert(os.is_open());
+    os << rootId;
+  }
 
   bool insert(point_t p) {
     auto root = node_t::get(rootId);
