@@ -38,11 +38,9 @@ namespace bgi = boost::geometry::index;
 typedef bg::model::point<ld, dimensions, bg::cs::cartesian> boostPoint_t;
 typedef bg::model::box<boostPoint_t> boostBox_t;
 
-#define minPrecision (14 + 3)
-
 template <typename T>
 bool between(T x, T a, T b) {
-  return (x >= a) && (x <= b);
+  return (x >= std::min(a, b)) && (x <= std::max(a, b));
 }
 
 int main(int argc, char** argv) {
@@ -67,6 +65,8 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < config["files"].size(); i++) {
       std::cout << config["files"][i] << std::endl;
       CSVReader reader(config["files"][i]["name"], ',');
+      // std::cout << json(reader.currentLine) << "\n";
+      // std::cout << json(reader.nameMap) << "\n";
       size_t max = config["files"][i]["max"];
       size_t skip = config["files"][i]["from"];
       for (size_t c = 0; reader.ok() && c < skip; c++) {
@@ -75,19 +75,23 @@ int main(int argc, char** argv) {
       while (reader.ok() && count < max) {
         try {
           if (!reader.next()) throw "linea invalida";
+          // std::cout << json(reader.currentLine) << "\n";
           for (size_t j = 0; j < dim; j++) {
             // ignore low precision coords
             auto value = reader(config["coordNames"][j]);
-            if (value.size() < minPrecision)
-              throw "coordenada con poca precision";
+            if (config["testPrecision"])
+              if (value.size() < config["minPrecision"])
+                throw "coordenada con poca precision";
             coords[j] = stold(value);
           }
-          if (!between(coords[0], (ld)config["filter"][0][0],
-                       (ld)config["filter"][0][1]))
-            throw "coordenada X fuera de rango";
-          if (!between(coords[1], (ld)config["filter"][1][0],
-                       (ld)config["filter"][1][1]))
-            throw "coordenada Y fuera de rango";
+          if (config["testPrecision"]) {
+            if (!between(coords[0], (ld)config["filter"][0][0],
+                         (ld)config["filter"][1][0]))
+              throw "coordenada X fuera de rango";
+            if (!between(coords[1], (ld)config["filter"][0][1],
+                         (ld)config["filter"][1][1]))
+              throw "coordenada Y fuera de rango";
+          }
         } catch (...) {  // ignore empty or bad formated coords
           countIgnore++;
           continue;

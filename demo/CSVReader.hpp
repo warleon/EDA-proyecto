@@ -6,13 +6,13 @@
 #include <vector>
 
 class CSVReader {
-  std::unordered_map<std::string, size_t> nameMap;
   std::ifstream file;
   char sep;
   size_t currentLineSize;
   size_t columns;
 
  public:
+  std::unordered_map<std::string, size_t> nameMap;
   std::vector<std::string> currentLine;
   using iterator = std::vector<std::string>::iterator;
   CSVReader(std::string filename, char sep_) : sep(sep_) {
@@ -52,6 +52,8 @@ class CSVReader {
     currentLine = split(line, sep);
     currentLineSize = currentLine.size();
     if (!head && columns > currentLineSize) {
+      // std::cout << "error al leer linea esperados: " << columns
+      //<< " campos, obtenidos: " << currentLineSize << "\n";
       return false;
     }
     return true;

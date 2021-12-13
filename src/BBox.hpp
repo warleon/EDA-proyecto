@@ -128,6 +128,24 @@ struct BBox {
     return overlap_ == d;
   }
 
+  // dummy split
+  void fixSplit(bbox_t* a, bbox_t* b) {
+    assert(a->isFull() || b->isFull());
+    bbox_t* full;
+    bbox_t* empty;
+    if (a->isFull()) {
+      full = a;
+      empty = b;
+    } else {
+      full = b;
+      empty = a;
+    }
+    auto M = full->content.size();
+    for (size_t i = 0; i < M / 2; i++) {
+      empty->content[i] = full->content[i];
+      full->content[i].nullify();
+    }
+  }
   //
   bbox_t trySplit(point_t p) {
     bbox_t nBox;
@@ -147,20 +165,16 @@ struct BBox {
       }
     }
 
-    bool here = p.manDist(content[fartest[0]]) < p.manDist(content[fartest[1]]);
     point_t pivots[] = {content[fartest[0]], content[fartest[1]]};
+    bool here = p.manDist(pivots[0]) < p.manDist(pivots[1]);
     // move points
     for (size_t i = 0; i < maxSize; i++) {
-      // if (fartest[1] == i) continue;
       if (content[i].manDist(pivots[0]) < content[i].manDist(pivots[1]))
         continue;
       assert(nBox.tryInsert(content[i]));
       content[i].nullify();
     }
-    // assert(nBox.tryInsert(content[fartest[1]]));
-    // content[fartest[1]].nullify();
-    assert(!isFull());
-    assert(!nBox.isFull());
+    if (isFull() || nBox.isFull()) fixSplit(this, &nBox);
     if (here) {
       assert(tryInsert(p));
     } else {

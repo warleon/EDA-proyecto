@@ -114,6 +114,23 @@ struct DiskNode {
     point_t pa(a), pb(b);
     box.resize(pa, pb);
   }
+  void fixSplit(node_t* a, node_t* b) {
+    assert(a->isFull() || b->isFull());
+    node_t* full = nullptr;
+    node_t* empty = nullptr;
+    if (a->isFull()) {
+      full = a;
+      empty = b;
+    } else {
+      full = b;
+      empty = a;
+    }
+
+    for (size_t i = 0; i < M / 2; i++) {
+      empty->sonsId[i] = full->sonsId[i];
+      full->sonsId[i] = 0;
+    }
+  }
   id_t split(point_t p) {
     assert(isFull());
     assert(isLeaf());
@@ -161,8 +178,7 @@ struct DiskNode {
       node->add(sonsId[i]);
       sonsId[i] = 0;
     }
-    assert(!isFull());
-    assert(!node->isFull());
+    if (isFull() || node->isFull()) fixSplit(this, node);
     if (here) {
       add(id);
     } else {
