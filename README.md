@@ -41,6 +41,7 @@ where:
 
 
 ### Data loading
+Download the data with the next commands and then add its paths in the config/config.json file
 ```bash
 cd ../data
 wget # copy 1 or sveral links from source.txt and paste it here to download 
@@ -67,14 +68,14 @@ time ./Demo config.json
 if "render":true then there will be an RTree.svg file in the same build directory. you can open it with your browser.
 keep in mind that you should render only with less than 40k points or your browser will suffer.
 
+### Filter
+the "Filter" and "doFilter" configuration parameters
+are used to clean the data inserted into the RTree.
+This is useful when "render":true.
+
 ## Persistence
 since the RTree is stored in disk you can add more files in
 the build/config.json file and re-run the demo to load more datapoints.
 however if "boostTest":true for the second time results may vary since our RTree would have more points loaded.
 
 \* if you change the RTree parameters then delete all the nodes in the nodes/ subdirectory and load the data from 0.
-
-## Filter
-the "Filter" and "doFilter" configuration parameters
-are used to clean the data inserted into the RTree.
-This is useful when "render":true.
