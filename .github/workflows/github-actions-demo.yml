@@ -17,6 +17,8 @@ jobs:
 
     - name: test
       run: |
+        apt update
+        apt install libboost-all-dev
         mkdir build config
         cd build
         cmake ..

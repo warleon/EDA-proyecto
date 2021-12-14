@@ -6,14 +6,14 @@
     ],
     "files": [
         {
-            "from": 450000,
-            "max": 450000,
-            "name": "../data/jorgeTest.csv"
+            "from": 0,
+            "max": 100000,
+            "name": "../data/green_tripdata_2015-01.csv"
         },
         {
             "from": 0,
-            "max": 99999999,
-            "name": "../data/yellow_tripdata_2015-01.csv"
+            "max": 100000,
+            "name": "../data/green_tripdata_2013-08.csv"
         }
     ],
     "filter": [
@@ -37,10 +37,10 @@
             40.80
         ]
     ],
-    "render": false,
-    "insert": false,
+    "render": true,
+    "insert": true,
     "query": true,
-    "minPrecision": 5,
-    "doFilter": false,
-    "testPrecision": false
+    "minPrecision": 7,
+    "doFilter": true,
+    "testPrecision": true
 }

@@ -20,6 +20,7 @@
 
 using json = nlohmann::json;
 
+// parameters
 const size_t dimensions = 2;
 const size_t leafCap = 1024 * 4;
 const size_t internCap = 64;
