@@ -50,20 +50,20 @@ wget # copy 1 or sveral links from source.txt and paste it here to download
 ### Configuration
 
 modify the config/config.json file to load the downloaded data following the sample.
-then execute the demo with theese commands if parameters changed.
+then execute the demo with theese commands if RTree parameters in demo changed.
 ```bash
 cd ../build
 make
 time ./Demo config.json
 ```
-\* config.json is copied from the data directory by the make command
+\* config.json is copied from the config directory by the make command
 And with theese commands if not:
 ```bash
 cd ../build
 cp ../config/config.json .
 time ./Demo config.json
 ```
-
+### Rendering
 if "render":true then there will be an RTree.svg file in the same build directory. you can open it with your browser.
 keep in mind that you should render only with less than 40k points or your browser will suffer.
 
@@ -71,6 +71,8 @@ keep in mind that you should render only with less than 40k points or your brows
 since the RTree is stored in disk you can add more files in
 the build/config.json file and re-run the demo to load more datapoints.
 however if "boostTest":true for the second time results may vary since our RTree would have more points loaded.
+
+\* if you change the RTree parameters then delete all the nodes in the nodes/ subdirectory and load the data from 0.
 
 ## Filter
 the "Filter" and "doFilter" configuration parameters
