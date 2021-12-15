@@ -1,4 +1,4 @@
-# EDA proyecto
+# RTree implementation in C++ with data persistence
 ![](./media/rtree_render.PNG) 
 ## Install Dependecies
 
