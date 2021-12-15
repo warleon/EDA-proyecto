@@ -295,6 +295,7 @@ struct DiskNode {
     if (object.isLeaf())
       toSVG(os, object.box, x, y, width, height);
     else {
+      //toSVG(os, object.box, x, y, width, height);
       coord_t min0 = object.min(0), min1 = object.min(1);
       coord_t max0 = object.max(0), max1 = object.max(1);
       os << "<g data-corners=\""

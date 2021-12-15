@@ -22,8 +22,8 @@ using json = nlohmann::json;
 
 // parameters
 const size_t dimensions = 2;
-const size_t leafCap = 1024 * 4;
-const size_t internCap = 64;
+const size_t leafCap = 10;
+const size_t internCap = 10;
 const size_t poolCap = 1000;
 
 using ld = long double;
@@ -143,6 +143,9 @@ int main(int argc, char** argv) {
   // update config
   std::ofstream os(configFilePath);
   os << config;
+  os.close();
+  os.open("result.json");
+  os << json(myResult);
 
   return 0;
 }
